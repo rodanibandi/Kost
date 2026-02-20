@@ -17,6 +17,122 @@ function listBookingsService() {
   return records;
 }
 
+function getPublicApiToken() {
+  const key = String(APP_CONFIG.PUBLIC_API_TOKEN_PROPERTY_KEY || 'PUBLIC_API_TOKEN').trim();
+  return String(PropertiesService.getScriptProperties().getProperty(key) || '').trim();
+}
+
+function ensurePublicApiToken(inputToken) {
+  const expectedToken = getPublicApiToken();
+  if (!expectedToken) {
+    throw new Error('PUBLIC_API_TOKEN belum diset di Script Properties.');
+  }
+
+  const incomingToken = String(inputToken || '').trim();
+  if (!incomingToken || incomingToken !== expectedToken) {
+    throw new Error('Token API publik tidak valid.');
+  }
+}
+
+function publicListingsService() {
+  const kostRows = getAllRecords(APP_CONFIG.SHEETS.KOST);
+  const kamarRows = getAllRecords(APP_CONFIG.SHEETS.KAMAR);
+
+  const publishedKost = kostRows.filter(function (row) {
+    const status = String(row.status_publish || '').trim().toLowerCase();
+    return status === 'publish' || status === 'published' || status === 'true' || status === '1';
+  });
+
+  const publishedKostIds = {};
+  publishedKost.forEach(function (row) {
+    const id = String(row.id_kost || '').trim();
+    if (id) publishedKostIds[id] = true;
+  });
+
+  const publicKamar = kamarRows.filter(function (row) {
+    const idKost = String(row.id_kost || '').trim();
+    const statusKamar = String(row.status_ketersediaan || '').trim().toLowerCase();
+    if (!publishedKostIds[idKost]) return false;
+    return statusKamar !== 'nonaktif';
+  });
+
+  return {
+    kost: publishedKost,
+    kamar: publicKamar
+  };
+}
+
+function publicCreateBookingService(input) {
+  ensurePublicApiToken(input && input.api_token);
+
+  const idBooking = generateNextBookingId();
+  const nama = String((input && input.nama) || '').trim();
+  const noHp = String((input && input.no_hp) || '').trim();
+  const email = String((input && input.email) || '').trim();
+  const roomId = String((input && input.id_kamar) || '').trim();
+  const tglMasuk = String((input && input.tgl_masuk) || '').trim();
+  const durasiBulan = String((input && input.durasi_bulan) || '').trim();
+  const catatan = String((input && input.catatan) || '').trim();
+  const sumber = String((input && input.sumber) || '').trim() || 'website-publik';
+  const nowText = nowIso();
+
+  required(nama, 'nama');
+  required(noHp, 'no_hp');
+  required(email, 'email');
+  required(roomId, 'id_kamar');
+  required(tglMasuk, 'tgl_masuk');
+  required(durasiBulan, 'durasi_bulan');
+
+  if (email.indexOf('@') < 1) {
+    throw new Error('Format email tidak valid.');
+  }
+
+  const duration = parseInt(durasiBulan, 10);
+  if (isNaN(duration) || duration < 1) {
+    throw new Error('Durasi bulan tidak valid.');
+  }
+
+  const kamarTarget = getAllRecords(APP_CONFIG.SHEETS.KAMAR).find(function (row) {
+    return String(row.id_kamar || '').trim() === roomId;
+  });
+
+  if (!kamarTarget) {
+    throw new Error('ID kamar tidak ditemukan: ' + roomId);
+  }
+
+  const statusKamar = String(kamarTarget.status_ketersediaan || '').trim().toLowerCase();
+  if (statusKamar !== 'tersedia') {
+    throw new Error('Kamar tidak tersedia untuk booking.');
+  }
+
+  const newRecord = {
+    id_booking: idBooking,
+    created_at: nowText,
+    nama: nama,
+    no_hp: noHp,
+    email: email,
+    id_kamar: roomId,
+    tgl_masuk: tglMasuk,
+    durasi_bulan: String(duration),
+    catatan: catatan,
+    status: 'baru',
+    sumber: sumber,
+    updated_at: nowText
+  };
+
+  appendRecord(APP_CONFIG.SHEETS.BOOKING, newRecord);
+  syncSingleKamarStatus(roomId, null, 'public_create_booking');
+  logAudit('public-api', 'public_create_booking', 'booking', idBooking, JSON.stringify({
+    id_kamar: roomId,
+    sumber: sumber
+  }));
+
+  return {
+    id_booking: idBooking,
+    status: 'baru'
+  };
+}
+
 function shouldMarkRoomAsBooked(bookingStatus) {
   const status = String(bookingStatus || '').trim().toLowerCase();
   return status === 'baru' || status === 'diproses' || status === 'diterima' || status === 'check-in';

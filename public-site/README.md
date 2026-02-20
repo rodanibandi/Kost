@@ -30,6 +30,9 @@ window.PUBLIC_CONFIG = {
 - Jika `apiBaseUrl` kosong, website akan pakai `fallbackDataPath` untuk listing.
 - Jika `bookingEndpointPath` belum aktif, submit booking berjalan mode demo (tidak mengirim ke server).
 
+Catatan penting:
+- `apiBaseUrl` harus diisi URL Worker Cloudflare (`*.workers.dev`), bukan URL Apps Script langsung.
+
 ## Kontrak API yang diharapkan
 ### GET `/public/listings`
 Response JSON salah satu format:

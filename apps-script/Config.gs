@@ -1,6 +1,7 @@
 const APP_CONFIG = {
   SPREADSHEET_ID: '',
   SPREADSHEET_ID_PROPERTY_KEY: 'SPREADSHEET_ID',
+  PUBLIC_API_TOKEN_PROPERTY_KEY: 'PUBLIC_API_TOKEN',
   DRIVE: {
     KAMAR_IMAGE_FOLDER_URL: 'https://drive.google.com/drive/folders/1TjVF4nMimjcj5o1SvgXZHX9iDcJ4GOUk?usp=drive_link'
   },

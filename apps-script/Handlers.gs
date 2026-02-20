@@ -88,6 +88,14 @@ function handleActionRequest(action, payload) {
   try {
     const safePayload = payload || {};
 
+    if (action === 'publicListings') {
+      return ok(publicListingsService());
+    }
+
+    if (action === 'publicCreateBooking') {
+      return ok(publicCreateBookingService(safePayload));
+    }
+
     if (action === 'authBootstrap') {
       return ok(authBootstrap(safePayload));
     }
