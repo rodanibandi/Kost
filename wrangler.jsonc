@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "kost-api",
+  "name": "kost",
   "main": "worker/index.js",
   "compatibility_date": "2026-02-20",
   "vars": {
