@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kost Kita</title>
+    <meta name="description" content="Website informasi kost dan form booking" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <h1>Kost Kita</h1>
+        <p>Temukan kamar kost yang sesuai dan ajukan booking online.</p>
+      </div>
+    </header>
+
+    <main class="container layout">
+      <section aria-labelledby="kost-title">
+        <div class="section-head">
+          <h2 id="kost-title">Daftar Kost</h2>
+          <button id="refresh-data" type="button">Refresh Data</button>
+        </div>
+        <div id="kost-list" class="kost-grid"></div>
+      </section>
+
+      <section aria-labelledby="booking-title" class="booking-section">
+        <h2 id="booking-title">Form Booking</h2>
+        <p class="muted">Isi data berikut untuk mengajukan booking kamar.</p>
+
+        <form id="booking-form" class="booking-form">
+          <label>
+            Nama Lengkap
+            <input type="text" name="nama" required />
+          </label>
+
+          <label>
+            No HP
+            <input type="tel" name="no_hp" required />
+          </label>
+
+          <label>
+            Email
+            <input type="email" name="email" required />
+          </label>
+
+          <label>
+            Pilih Kamar
+            <select name="id_kamar" id="booking-room" required>
+              <option value="">Pilih kamar tersedia</option>
+            </select>
+          </label>
+
+          <label>
+            Tanggal Masuk
+            <input type="date" name="tgl_masuk" required />
+          </label>
+
+          <label>
+            Durasi (bulan)
+            <input type="number" min="1" name="durasi_bulan" required />
+          </label>
+
+          <label>
+            Catatan
+            <textarea name="catatan" rows="3" placeholder="Opsional"></textarea>
+          </label>
+
+          <button type="submit" id="submit-booking">Kirim Booking</button>
+        </form>
+
+        <p id="booking-message" class="message" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <footer class="container site-footer">
+      <small>© <span id="current-year"></span> Kost Kita</small>
+    </footer>
+
+    <script src="./config.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

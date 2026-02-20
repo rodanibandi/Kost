@@ -1,0 +1,35 @@
+{
+  "kost": [
+    {
+      "id_kost": "KOST01",
+      "nama": "Kost Mawar",
+      "alamat": "Jl. Mawar No. 10",
+      "maps_url": "",
+      "fasilitas_umum": "WiFi, dapur bersama, parkir motor",
+      "kontak": "081234567890",
+      "status_publish": "published"
+    }
+  ],
+  "kamar": [
+    {
+      "id_kamar": "KMR-001",
+      "id_kost": "KOST01",
+      "nama_kamar": "Kamar A1",
+      "harga_bulanan": "1200000",
+      "ukuran": "3x3",
+      "fasilitas": "Kasur, lemari, kamar mandi dalam",
+      "status_ketersediaan": "tersedia",
+      "foto_url": ""
+    },
+    {
+      "id_kamar": "KMR-002",
+      "id_kost": "KOST01",
+      "nama_kamar": "Kamar A2",
+      "harga_bulanan": "1300000",
+      "ukuran": "3x4",
+      "fasilitas": "Kasur, lemari, meja",
+      "status_ketersediaan": "dibooking",
+      "foto_url": ""
+    }
+  ]
+}

@@ -1,0 +1,3050 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kost Command Center</title>
+    <style>
+      :root {
+        --bg: #060814;
+        --bg-soft: #0d1328;
+        --surface: #0f1934;
+        --surface-2: #172447;
+        --surface-3: #1d2f59;
+        --text: #f5f8ff;
+        --muted: #96a8c7;
+        --border: rgba(157, 181, 223, 0.2);
+        --primary: #5ea0ff;
+        --primary-strong: #3f84ef;
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(1400px 640px at 8% -6%, #2a3f77 0%, transparent 46%),
+          radial-gradient(1000px 520px at 104% 0%, #1d3367 0%, transparent 42%),
+          linear-gradient(165deg, #030711 0%, #060d20 42%, #091631 100%);
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1280px;
+        margin: 24px auto;
+        padding: 0 18px;
+      }
+
+      .shell {
+        background: linear-gradient(180deg, rgba(15, 26, 50, 0.92), rgba(9, 17, 35, 0.94));
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        box-shadow: 0 22px 70px rgba(0, 0, 0, 0.48);
+        overflow: hidden;
+        backdrop-filter: blur(12px);
+      }
+
+      .shell-inner {
+        padding: 22px;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .title {
+        margin: 0;
+        font-size: 42px;
+        line-height: 1;
+        letter-spacing: -1.4px;
+        font-weight: 800;
+        color: #f8fbff;
+      }
+
+      .subtitle {
+        margin-top: 8px;
+        color: #a7bfdf;
+        font-size: 16px;
+      }
+
+      .header-actions {
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .tabs {
+        display: inline-flex;
+        gap: 8px;
+        padding: 6px;
+        background: rgba(20, 34, 62, 0.7);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        margin-bottom: 16px;
+      }
+
+      button {
+        border: 1px solid rgba(165, 188, 228, 0.25);
+        background: rgba(24, 39, 71, 0.95);
+        color: var(--text);
+        padding: 9px 14px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 600;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        background: rgba(35, 55, 97, 0.95);
+        border-color: rgba(167, 197, 247, 0.35);
+      }
+
+      .tab-btn {
+        color: #c9d9f1;
+        background: transparent;
+        border-color: transparent;
+      }
+
+      .tab-btn.active {
+        background: linear-gradient(180deg, rgba(87, 151, 255, 0.34), rgba(64, 121, 227, 0.3));
+        border-color: rgba(126, 181, 255, 0.62);
+        color: #f6fbff;
+        box-shadow: inset 0 1px 0 rgba(198, 222, 255, 0.25);
+      }
+
+      button.primary {
+        background: linear-gradient(180deg, #6ba8ff, #4388f1);
+        border-color: rgba(161, 201, 255, 0.45);
+        color: #f8fbff;
+        font-weight: 700;
+      }
+
+      button.primary:hover {
+        background: linear-gradient(180deg, #7db4ff, #4e92f6);
+      }
+
+      .section {
+        display: none;
+        background: rgba(9, 17, 34, 0.72);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 18px;
+      }
+
+      .section.active { display: block; }
+
+      .section-title {
+        margin: 0 0 12px 0;
+        font-size: 28px;
+        color: #f7fbff;
+        letter-spacing: -0.5px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .stat-card {
+        padding: 14px;
+        border-radius: 14px;
+        background: linear-gradient(180deg, rgba(24, 39, 69, 0.82), rgba(18, 30, 55, 0.88));
+        border: 1px solid var(--border);
+      }
+
+      .stat-label {
+        color: #a9bfdc;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+
+      .stat-value {
+        margin-top: 8px;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.6px;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+
+      input, select {
+        background: #0d1b34;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        outline: none;
+        min-height: 42px;
+      }
+
+      input {
+        min-width: 320px;
+        flex: 1;
+      }
+
+      .field-input {
+        width: 100%;
+        min-width: 0;
+        flex: none;
+      }
+
+      .toolbar .spacer {
+        flex: 1;
+      }
+
+      input:focus, select:focus {
+        border-color: rgba(104, 159, 255, 0.75);
+        box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.2);
+      }
+
+      .table-wrap {
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        overflow: auto;
+        background: rgba(8, 15, 30, 0.76);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 16px;
+        min-width: 900px;
+      }
+
+      th, td {
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        text-align: left;
+        padding: 12px 10px;
+      }
+
+      th {
+        font-size: 14px;
+        color: #c0d3ef;
+        font-weight: 700;
+        background: rgba(15, 26, 49, 0.95);
+        position: sticky;
+        top: 0;
+      }
+
+      tbody tr:hover td {
+        background: rgba(41, 64, 104, 0.35);
+      }
+
+      .muted { color: var(--muted); }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 70px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: 700;
+        border: 1px solid transparent;
+      }
+
+      .status-baru { background: rgba(59, 130, 246, 0.17); color: #93c5fd; border-color: rgba(59, 130, 246, 0.55); }
+      .status-diproses { background: rgba(245, 158, 11, 0.16); color: #fcd34d; border-color: rgba(245, 158, 11, 0.5); }
+      .status-diterima { background: rgba(34, 197, 94, 0.16); color: #86efac; border-color: rgba(34, 197, 94, 0.5); }
+      .status-ditolak { background: rgba(239, 68, 68, 0.16); color: #fca5a5; border-color: rgba(239, 68, 68, 0.5); }
+      .status-check-in { background: rgba(14, 165, 233, 0.16); color: #7dd3fc; border-color: rgba(14, 165, 233, 0.5); }
+      .status-batal { background: rgba(148, 163, 184, 0.2); color: #d1d9e5; border-color: rgba(148, 163, 184, 0.5); }
+      .status-aktif { background: rgba(34, 197, 94, 0.16); color: #86efac; border-color: rgba(34, 197, 94, 0.5); }
+      .status-selesai { background: rgba(148, 163, 184, 0.2); color: #d1d9e5; border-color: rgba(148, 163, 184, 0.5); }
+
+      .inline-actions {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 8, 22, 0.72);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 16px;
+      }
+
+      .modal-backdrop.active {
+        display: flex;
+      }
+
+      .modal-card {
+        width: 100%;
+        max-width: 520px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, #111d37 0%, #0c162c 100%);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+      }
+
+      .modal-header {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.2px;
+      }
+
+      .modal-body {
+        padding: 14px 16px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .modal-field label {
+        display: block;
+        margin-bottom: 6px;
+        color: #b8cae6;
+        font-size: 13px;
+      }
+
+      .modal-field select {
+        width: 100%;
+      }
+
+      .modal-field input {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .field-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      .modal-field .field-row {
+        align-items: center;
+      }
+
+      .modal-field .field-row .field-input {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .modal-field .field-row button {
+        flex-shrink: 0;
+      }
+
+      .manual-input-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .manual-input-item {
+        position: relative;
+      }
+
+      .manual-input-item .manual-fasilitas-input {
+        padding-right: 40px;
+      }
+
+      .manual-remove-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        min-height: auto;
+        padding: 4px 8px;
+        border-radius: 8px;
+        border-color: rgba(148, 163, 184, 0.38);
+        background: rgba(30, 44, 70, 0.92);
+        line-height: 1;
+      }
+
+      .manual-input-grid .manual-action-row {
+        grid-column: 1 / -1;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .helper-text {
+        color: #9db2d2;
+        font-size: 12px;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: rgba(11, 21, 40, 0.65);
+      }
+
+      .feature-item input {
+        min-width: 0;
+        width: auto;
+        flex: none;
+        min-height: auto;
+      }
+
+      .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 16px;
+        border-top: 1px solid var(--border);
+      }
+
+      .action-btn {
+        font-size: 14px;
+        padding: 6px 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.32);
+        background: rgba(30, 44, 70, 0.9);
+        color: #d8e4f6;
+      }
+
+      .action-btn:hover {
+        background: rgba(52, 77, 121, 0.95);
+        border-color: rgba(130, 167, 229, 0.45);
+      }
+
+      .action-btn.danger {
+        border-color: rgba(239, 68, 68, 0.45);
+        color: #fecaca;
+        background: rgba(127, 29, 29, 0.2);
+      }
+
+      .action-btn.danger:hover {
+        background: rgba(153, 27, 27, 0.35);
+      }
+
+      .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .photo-card {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 8px;
+        background: rgba(11, 21, 40, 0.65);
+      }
+
+      .photo-card img {
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+      }
+
+      .photo-card .inline-actions {
+        margin-top: 8px;
+      }
+
+      .fasilitas-list {
+        margin: 0;
+        padding-left: 20px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .dialog-message {
+        color: #c9d9f2;
+        line-height: 1.5;
+        white-space: pre-line;
+      }
+
+      .dialog-input-wrap {
+        display: none;
+      }
+
+      .dialog-input-wrap.active {
+        display: block;
+      }
+
+      .message {
+        margin-top: 12px;
+        padding: 13px 14px;
+        border-radius: 12px;
+        font-size: 14px;
+        border: 1px solid var(--border);
+        background: rgba(14, 23, 40, 0.65);
+        color: #a8bddb;
+      }
+
+      .message.error {
+        color: #fecaca;
+        border-color: rgba(239, 68, 68, 0.55);
+        background: rgba(127, 29, 29, 0.2);
+      }
+
+      .message.success {
+        color: #bbf7d0;
+        border-color: rgba(34, 197, 94, 0.45);
+        background: rgba(20, 83, 45, 0.24);
+      }
+
+      @media (max-width: 900px) {
+        .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .title { font-size: 34px; }
+        .feature-grid { grid-template-columns: 1fr; }
+        .manual-input-grid { grid-template-columns: 1fr; }
+        .header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .header-actions {
+          justify-content: flex-end;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="shell">
+        <div class="shell-inner">
+          <div class="header">
+            <div>
+              <h1 class="title">Kost Command Center</h1>
+              <div class="subtitle" id="sessionLine">Memuat sesi...</div>
+            </div>
+            <div class="header-actions">
+              <button onclick="logoutApp()">Keluar</button>
+              <button class="primary" onclick="reloadAll()">Sinkronkan Data</button>
+            </div>
+          </div>
+
+          <div class="tabs">
+            <button id="tab-booking" class="tab-btn active" onclick="showTab('booking')">Reservasi</button>
+            <button id="tab-kost" class="tab-btn" onclick="showTab('kost')">Properti</button>
+            <button id="tab-kamar" class="tab-btn" onclick="showTab('kamar')">Unit Kamar</button>
+            <button id="tab-pengguna" class="tab-btn" onclick="showTab('pengguna')">Penghuni</button>
+            <button id="tab-users" class="tab-btn" onclick="showTab('users')">Akun Tim</button>
+          </div>
+
+          <div id="booking" class="section active">
+            <h2 class="section-title">Manajemen Reservasi</h2>
+
+            <div class="stats">
+              <div class="stat-card"><div class="stat-label">Total Reservasi</div><div class="stat-value" id="statTotal">0</div></div>
+              <div class="stat-card"><div class="stat-label">Permintaan Baru</div><div class="stat-value" id="statBaru">0</div></div>
+              <div class="stat-card"><div class="stat-label">Dalam Proses</div><div class="stat-value" id="statDiproses">0</div></div>
+              <div class="stat-card"><div class="stat-label">Sudah Disetujui</div><div class="stat-value" id="statDiterima">0</div></div>
+            </div>
+
+            <div class="toolbar">
+              <select id="bookingFilter" onchange="applyBookingFilter()">
+                <option value="all">Semua Tahap</option>
+                <option value="baru">baru</option>
+                <option value="diproses">diproses</option>
+                <option value="diterima">diterima</option>
+                <option value="ditolak">ditolak</option>
+                <option value="batal">batal</option>
+                <option value="selesai">selesai</option>
+              </select>
+              <input id="bookingSearch" placeholder="Cari nama, nomor HP, atau ID reservasi" oninput="applyBookingFilter()" />
+              <button type="button" onclick="openTestBookingModal()">Tambah Uji Reservasi</button>
+              <button type="button" class="primary" onclick="openUpdateBookingModal()">Ubah Status Reservasi</button>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nama</th>
+                    <th>No HP</th>
+                    <th>Kamar</th>
+                    <th>Status</th>
+                    <th>Dibuat</th>
+                  </tr>
+                </thead>
+                <tbody id="bookingBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="kost" class="section">
+            <h2 class="section-title">Daftar Properti Kost</h2>
+            <div class="toolbar">
+              <button type="button" class="primary" onclick="openKostModal()">Tambah Properti</button>
+              <div class="spacer"></div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nama</th>
+                    <th>Alamat</th>
+                    <th>Maps</th>
+                    <th>Publish</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="kostBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="kamar" class="section">
+            <h2 class="section-title">Inventaris Unit Kamar</h2>
+            <div class="toolbar">
+              <button type="button" class="primary" onclick="openKamarModal()">Tambah Unit Kamar</button>
+              <div class="spacer"></div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>ID Kost</th>
+                    <th>Nama Kamar</th>
+                    <th>Harga</th>
+                    <th>Foto</th>
+                    <th>Fasilitas</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="kamarBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="pengguna" class="section">
+            <h2 class="section-title">Data Penghuni Aktif</h2>
+            <div class="toolbar">
+              <button type="button" class="primary" onclick="openPenggunaModal()">Tambah Penghuni</button>
+              <div class="spacer"></div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nama</th>
+                    <th>No HP</th>
+                    <th>ID Kamar</th>
+                    <th>Ngekost Sampai</th>
+                    <th>Bayar Bulan Ini</th>
+                    <th>Tagihan</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="penggunaBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="users" class="section">
+            <h2 class="section-title">Manajemen Akun Tim</h2>
+            <div class="toolbar">
+              <button type="button" class="primary" onclick="openCreateUserModal()">Tambah Akun Baru</button>
+              <div class="spacer"></div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Nama</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="usersBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="message" id="messageBox">Menyiapkan dashboard modern...</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="updateBookingModal" class="modal-backdrop" onclick="onModalBackdropClick(event)">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="updateBookingTitle">
+        <div class="modal-header" id="updateBookingTitle">Perbarui Status Reservasi</div>
+        <div class="modal-body">
+          <div class="modal-field">
+            <label for="modalStatusAwal">1. Pilih tahap saat ini</label>
+            <select id="modalStatusAwal" onchange="syncBookingTargetsByStatus()">
+              <option value="baru">baru</option>
+              <option value="diproses">diproses</option>
+              <option value="diterima">diterima</option>
+              <option value="ditolak">ditolak</option>
+              <option value="batal">batal</option>
+            </select>
+          </div>
+
+          <div class="modal-field">
+            <label for="modalBookingTarget">2. Pilih data reservasi</label>
+            <select id="modalBookingTarget"></select>
+          </div>
+
+          <div class="modal-field">
+            <label for="modalStatusUpdate">3. Pilih tahap baru</label>
+            <select id="modalStatusUpdate" onchange="onBookingStatusUpdateChange()">
+              <option value="baru">baru</option>
+              <option value="diproses">diproses</option>
+              <option value="diterima">diterima</option>
+              <option value="ditolak">ditolak</option>
+              <option value="batal">batal</option>
+            </select>
+          </div>
+
+          <div class="modal-field" id="modalAcceptPeriodField" style="display: none;">
+            <label>4. Tentukan periode sewa (saat diterima)</label>
+            <div class="field-row">
+              <input id="modalNgekostDari" class="field-input" type="month" />
+              <input id="modalNgekostSampai" class="field-input" type="month" />
+            </div>
+            <div class="helper-text">Isi bulan mulai dan selesai, lalu klik Simpan Perubahan.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeUpdateBookingModal()">Tutup</button>
+          <button type="button" class="primary" onclick="submitUpdateBookingModal()">Simpan Perubahan</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="testBookingModal" class="modal-backdrop" onclick="onTestBookingModalBackdropClick(event)">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="testBookingTitle">
+        <div class="modal-header" id="testBookingTitle">Buat Reservasi Uji Coba</div>
+        <div class="modal-body">
+          <div class="modal-field">
+            <label for="testBookingNama">Nama calon penghuni</label>
+            <input id="testBookingNama" class="field-input" placeholder="Contoh: Budi Santoso" />
+          </div>
+
+          <div class="modal-field">
+            <label for="testBookingEmail">Email aktif</label>
+            <input id="testBookingEmail" class="field-input" type="email" placeholder="contoh@email.com" />
+          </div>
+
+          <div class="modal-field">
+            <label for="testBookingNoHp">Nomor WhatsApp</label>
+            <input id="testBookingNoHp" class="field-input" placeholder="08xxxxxxxxxx" />
+          </div>
+
+          <div class="modal-field">
+            <label for="testBookingKamar">Unit kamar tujuan</label>
+            <select id="testBookingKamar"></select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeTestBookingModal()">Tutup</button>
+          <button type="button" class="primary" onclick="submitTestBookingModal()">Simpan Reservasi</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="kostModal" class="modal-backdrop" onclick="onKostModalBackdropClick(event)">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="kostModalTitle">
+        <div class="modal-header" id="kostModalTitle">Tambah Properti Kost</div>
+        <div class="modal-body">
+          <input type="hidden" id="kostFormId" />
+
+          <div class="modal-field">
+            <label for="kostNamaInput">Nama properti</label>
+            <input id="kostNamaInput" class="field-input" placeholder="Contoh: Kost Mawar Residence" />
+          </div>
+
+          <div class="modal-field">
+            <label for="kostAlamatInput">Alamat lengkap</label>
+            <input id="kostAlamatInput" class="field-input" placeholder="Tuliskan alamat properti" />
+          </div>
+
+          <div class="modal-field">
+            <label for="kostMapsInput">Tautan Google Maps</label>
+            <div class="field-row">
+              <input id="kostMapsInput" class="field-input" placeholder="Tempel tautan lokasi" />
+              <button type="button" onclick="openGoogleMapsFromForm()">Buka Maps</button>
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label for="kostPublishInput">Status publikasi</label>
+            <select id="kostPublishInput">
+              <option value="draft">draft</option>
+              <option value="publish">publish</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeKostModal()">Tutup</button>
+          <button type="button" class="primary" onclick="submitKostModal()">Simpan Properti</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="kamarModal" class="modal-backdrop" onclick="onKamarModalBackdropClick(event)">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="kamarModalTitle">
+        <div class="modal-header" id="kamarModalTitle">Tambah Unit Kamar</div>
+        <div class="modal-body">
+          <div class="modal-field">
+            <label for="kamarKostInput">Pilih properti</label>
+            <select id="kamarKostInput"></select>
+          </div>
+
+          <div class="modal-field">
+            <label for="kamarNamaInput">Nama unit kamar</label>
+            <input id="kamarNamaInput" class="field-input" placeholder="Contoh: Standard A" />
+          </div>
+
+          <div class="modal-field">
+            <label for="kamarHargaInput">Harga sewa per bulan</label>
+            <input id="kamarHargaInput" class="field-input" type="number" min="0" step="1" placeholder="Contoh: 1200000" />
+          </div>
+
+          <div class="modal-field">
+            <label for="kamarUkuranInput">Ukuran kamar</label>
+            <input id="kamarUkuranInput" class="field-input" placeholder="Contoh: 3x3 meter" />
+          </div>
+
+          <div class="modal-field">
+            <label>Daftar fasilitas kamar</label>
+            <div class="field-row">
+              <input id="kamarFasilitasSummary" class="field-input" placeholder="Belum ada fasilitas dipilih" readonly />
+              <button type="button" onclick="openFasilitasKamarModal()">Kelola Fasilitas</button>
+            </div>
+            <div class="helper-text">Disimpan dalam satu sel, contoh: AC; WiFi; Kamar Mandi Dalam.</div>
+          </div>
+
+          <div class="modal-field">
+            <label for="kamarFotoInput">Unggah foto kamar (maksimal 5)</label>
+            <input id="kamarFotoInput" class="field-input" type="file" accept="image/*" multiple />
+            <div class="helper-text">Nama file otomatis: NamaKamar_01 sampai NamaKamar_05.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeKamarModal()">Tutup</button>
+          <button type="button" class="primary" onclick="submitKamarModal()">Simpan Kamar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="fasilitasKamarModal" class="modal-backdrop" onclick="onFasilitasKamarBackdropClick(event)">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="fasilitasKamarTitle">
+        <div class="modal-header" id="fasilitasKamarTitle">Kelola Fasilitas Kamar</div>
+        <div class="modal-body">
+          <div class="modal-field">
+            <label>Pilih fasilitas preset</label>
+            <div class="feature-grid" id="fasilitasPresetGrid">
+              <label class="feature-item"><input type="checkbox" value="Kipas" onchange="toggleFasilitasPreset(this)" />Kipas</label>
+              <label class="feature-item"><input type="checkbox" value="Ac" onchange="toggleFasilitasPreset(this)" />Ac</label>
+              <label class="feature-item"><input type="checkbox" value="Kamar Mandi Dalam" onchange="toggleFasilitasPreset(this)" />Kamar Mandi Dalam</label>
+              <label class="feature-item"><input type="checkbox" value="Kamar Mandi Luar" onchange="toggleFasilitasPreset(this)" />Kamar Mandi Luar</label>
+              <label class="feature-item"><input type="checkbox" value="Dapur Bersama" onchange="toggleFasilitasPreset(this)" />Dapur Bersama</label>
+              <label class="feature-item"><input type="checkbox" value="Wifi" onchange="toggleFasilitasPreset(this)" />Wifi</label>
+              <label class="feature-item"><input type="checkbox" value="Kompor" onchange="toggleFasilitasPreset(this)" />Kompor</label>
+              <label class="feature-item"><input type="checkbox" value="Lemari Es" onchange="toggleFasilitasPreset(this)" />Lemari Es</label>
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label>Tambahan fasilitas manual</label>
+            <div id="manualFasilitasInputs" class="manual-input-grid">
+              <div class="manual-input-item">
+                <input class="field-input manual-fasilitas-input" placeholder="Input fasilitas 1" />
+                <button type="button" class="manual-remove-btn" onclick="removeManualInputColumn(this)">x</button>
+              </div>
+              <div class="manual-input-item">
+                <input class="field-input manual-fasilitas-input" placeholder="Input fasilitas 2" />
+                <button type="button" class="manual-remove-btn" onclick="removeManualInputColumn(this)">x</button>
+              </div>
+              <div class="manual-input-item">
+                <input class="field-input manual-fasilitas-input" placeholder="Input fasilitas 3" />
+                <button type="button" class="manual-remove-btn" onclick="removeManualInputColumn(this)">x</button>
+              </div>
+              <div class="manual-action-row">
+                <button type="button" onclick="addManualInputColumn()">Tambah Input</button>
+                <button type="button" class="manual-add-btn" onclick="addManualFasilitasKamar()">Simpan Tambahan</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label>Ringkasan fasilitas terpilih</label>
+            <div id="fasilitasKamarSelectedList" class="helper-text">Belum ada fasilitas.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeFasilitasKamarModal()">Kembali</button>
+          <button type="button" class="primary" onclick="saveFasilitasKamarModal()">Simpan Perubahan</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="kamarFotoModal" class="modal-backdrop" onclick="onKamarFotoModalBackdropClick(event)">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="kamarFotoTitle">
+        <div class="modal-header" id="kamarFotoTitle">Galeri Foto Kamar</div>
+        <div class="modal-body">
+          <div class="helper-text" id="kamarFotoLabel">Koleksi foto kamar</div>
+          <div id="kamarFotoGrid" class="photo-grid"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeKamarFotoModal()">Tutup</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="kamarFasilitasInfoModal" class="modal-backdrop" onclick="onKamarFasilitasInfoBackdropClick(event)">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="kamarFasilitasInfoTitle">
+        <div class="modal-header" id="kamarFasilitasInfoTitle">Detail Fasilitas Kamar</div>
+        <div class="modal-body">
+          <div class="helper-text" id="kamarFasilitasInfoLabel">Daftar fasilitas</div>
+          <ul id="kamarFasilitasInfoList" class="fasilitas-list"></ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeKamarFasilitasInfoModal()">Tutup</button>
+          <button type="button" class="primary" onclick="openEditFasilitasFromInfo()">Edit Fasilitas</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="penggunaModal" class="modal-backdrop" onclick="onPenggunaModalBackdropClick(event)">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="penggunaModalTitle">
+        <div class="modal-header" id="penggunaModalTitle">Tambah Data Penghuni</div>
+        <div class="modal-body">
+          <div class="modal-field">
+            <label for="penggunaNamaInput">Nama penghuni</label>
+            <input id="penggunaNamaInput" class="field-input" placeholder="Contoh: Siti Rahma" />
+          </div>
+
+          <div class="modal-field">
+            <label for="penggunaNoHpInput">Nomor WhatsApp</label>
+            <input id="penggunaNoHpInput" class="field-input" placeholder="08xxxxxxxxxx" />
+          </div>
+
+          <div class="modal-field">
+            <label for="penggunaKamarInput">Unit kamar</label>
+            <select id="penggunaKamarInput"></select>
+          </div>
+
+          <div class="modal-field">
+            <label for="penggunaSampaiInput">Masa sewa sampai</label>
+            <input id="penggunaSampaiInput" class="field-input" type="month" />
+          </div>
+
+          <div class="modal-field">
+            <label for="penggunaBayarInput">Status pembayaran bulan ini</label>
+            <select id="penggunaBayarInput">
+              <option value="tidak">tidak</option>
+              <option value="ya">ya</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closePenggunaModal()">Tutup</button>
+          <button type="button" class="primary" onclick="submitPenggunaModal()">Simpan Pengguna</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="loginModal" class="modal-backdrop active" onclick="onLoginModalBackdropClick(event)">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+        <div class="modal-header" id="loginTitle">Masuk ke Dashboard</div>
+        <div class="modal-body">
+          <div class="modal-field">
+            <label for="loginUsernameInput">Username</label>
+            <input id="loginUsernameInput" class="field-input" placeholder="Masukkan username akun" />
+          </div>
+          <div class="modal-field">
+            <label for="loginPasswordInput">Password</label>
+            <input id="loginPasswordInput" class="field-input" type="password" placeholder="Masukkan password akun" />
+          </div>
+          <div class="helper-text">Akun awal saat setup pertama: username owner, password owner123.</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="primary" onclick="submitLogin()">Masuk Sekarang</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="setupCredentialsModal" class="modal-backdrop" onclick="onSetupCredentialsBackdropClick(event)">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="setupCredentialsTitle">
+        <div class="modal-header" id="setupCredentialsTitle">Aktivasi Akun Pemilik</div>
+        <div class="modal-body">
+          <div class="helper-text" id="setupDetectedEmail">Email terdeteksi: -</div>
+          <div class="modal-field">
+            <label for="setupNamaInput">Nama lengkap</label>
+            <input id="setupNamaInput" class="field-input" placeholder="Nama Anda" />
+          </div>
+          <div class="modal-field">
+            <label for="setupUsernameInput">Username login</label>
+            <input id="setupUsernameInput" class="field-input" placeholder="Buat username baru" />
+          </div>
+          <div class="modal-field">
+            <label for="setupPasswordInput">Password</label>
+            <input id="setupPasswordInput" class="field-input" type="password" placeholder="Minimal 6 karakter" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="primary" onclick="submitSetupCredentials()">Aktifkan & Masuk</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="createUserModal" class="modal-backdrop" onclick="onCreateUserModalBackdropClick(event)">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="createUserTitle">
+        <div class="modal-header" id="createUserTitle">Tambah Akun Tim Baru</div>
+        <div class="modal-body">
+          <div class="modal-field">
+            <label for="createUserNama">Nama lengkap</label>
+            <input id="createUserNama" class="field-input" placeholder="Nama anggota tim" />
+          </div>
+          <div class="modal-field">
+            <label for="createUserUsername">Username</label>
+            <input id="createUserUsername" class="field-input" placeholder="username login" />
+          </div>
+          <div class="modal-field">
+            <label for="createUserEmail">Email (opsional)</label>
+            <input id="createUserEmail" class="field-input" placeholder="nama@domain.com" />
+          </div>
+          <div class="modal-field">
+            <label for="createUserRole">Peran akses</label>
+            <select id="createUserRole">
+              <option value="manager">manager</option>
+              <option value="owner">owner</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label for="createUserPassword">Password awal</label>
+            <input id="createUserPassword" class="field-input" type="password" placeholder="Minimal 6 karakter" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeCreateUserModal()">Tutup</button>
+          <button type="button" class="primary" onclick="submitCreateUser()">Simpan Akun</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="appDialogModal" class="modal-backdrop" onclick="onAppDialogBackdropClick(event)">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="appDialogTitle">
+        <div class="modal-header" id="appDialogTitle">Konfirmasi</div>
+        <div class="modal-body">
+          <div id="appDialogMessage" class="dialog-message"></div>
+          <div id="appDialogInputWrap" class="dialog-input-wrap">
+            <input id="appDialogInput" class="field-input" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="appDialogCancelBtn" onclick="onAppDialogCancel()">Batal</button>
+          <button type="button" class="primary" id="appDialogOkBtn" onclick="onAppDialogOk()">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const injectedUser = {};
+      const BOOKING_STATUSES = ['baru', 'diproses', 'diterima', 'ditolak', 'batal'];
+
+      let bookingRows = [];
+      let kostRows = [];
+      let kamarRows = [];
+      let penggunaRows = [];
+      let usersRows = [];
+      let selectedKamarFasilitas = [];
+      let manualFasilitasCounter = 3;
+      let isUpdatingBooking = false;
+      let isSavingKost = false;
+      let isSavingKamar = false;
+      let isSavingPengguna = false;
+      let activeKamarFotoId = '';
+      let activeKamarFasilitasId = '';
+      let autoRefreshIntervalId = null;
+      let appDialogResolver = null;
+      let appDialogHasInput = false;
+      let sessionToken = '';
+      let currentSessionUser = null;
+
+      const AUTO_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+
+      function showMessage(text, isError) {
+        const box = document.getElementById('messageBox');
+        box.textContent = text;
+        box.className = 'message ' + (isError ? 'error' : 'success');
+      }
+
+      function showTab(tabId) {
+        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        const activeTabButton = document.getElementById('tab-' + tabId);
+        if (activeTabButton) {
+          activeTabButton.classList.add('active');
+        }
+      }
+
+      function openAppDialog(options) {
+        const config = options || {};
+        const modal = document.getElementById('appDialogModal');
+        const title = document.getElementById('appDialogTitle');
+        const message = document.getElementById('appDialogMessage');
+        const inputWrap = document.getElementById('appDialogInputWrap');
+        const input = document.getElementById('appDialogInput');
+        const cancelBtn = document.getElementById('appDialogCancelBtn');
+        const okBtn = document.getElementById('appDialogOkBtn');
+
+        title.textContent = String(config.title || 'Konfirmasi');
+        message.textContent = String(config.message || '');
+
+        appDialogHasInput = !!config.hasInput;
+        if (appDialogHasInput) {
+          inputWrap.classList.add('active');
+          input.value = String(config.inputValue || '');
+          input.placeholder = String(config.inputPlaceholder || '');
+          input.focus();
+          input.select();
+        } else {
+          inputWrap.classList.remove('active');
+          input.value = '';
+          input.placeholder = '';
+        }
+
+        cancelBtn.style.display = config.showCancel === false ? 'none' : '';
+        cancelBtn.textContent = String(config.cancelText || 'Batal');
+        okBtn.textContent = String(config.okText || 'OK');
+        modal.classList.add('active');
+
+        return new Promise(function (resolve) {
+          appDialogResolver = resolve;
+        });
+      }
+
+      function closeAppDialog() {
+        const modal = document.getElementById('appDialogModal');
+        modal.classList.remove('active');
+      }
+
+      function resolveAppDialog(value) {
+        const resolver = appDialogResolver;
+        appDialogResolver = null;
+        closeAppDialog();
+        if (resolver) {
+          resolver(value);
+        }
+      }
+
+      function onAppDialogCancel() {
+        resolveAppDialog(null);
+      }
+
+      function onAppDialogOk() {
+        if (appDialogHasInput) {
+          const input = document.getElementById('appDialogInput');
+          resolveAppDialog(String(input.value || ''));
+          return;
+        }
+
+        resolveAppDialog(true);
+      }
+
+      function onAppDialogBackdropClick(event) {
+        if (event.target && event.target.id === 'appDialogModal') {
+          onAppDialogCancel();
+        }
+      }
+
+      async function themedConfirm(message, title) {
+        const result = await openAppDialog({
+          title: title || 'Konfirmasi',
+          message: message,
+          showCancel: true,
+          okText: 'OK',
+          cancelText: 'Batal'
+        });
+        return result === true;
+      }
+
+      async function themedPrompt(message, defaultValue, title, placeholder) {
+        const result = await openAppDialog({
+          title: title || 'Input',
+          message: message,
+          hasInput: true,
+          inputValue: defaultValue || '',
+          inputPlaceholder: placeholder || '',
+          showCancel: true,
+          okText: 'Simpan',
+          cancelText: 'Batal'
+        });
+
+        if (result === null) {
+          return null;
+        }
+        return String(result || '').trim();
+      }
+
+      function callAction(action, payload) {
+        return new Promise((resolve, reject) => {
+          const requestPayload = Object.assign({}, payload || {});
+          const openActions = ['authLogin', 'authBootstrap', 'authSetupCredentials'];
+          if (openActions.indexOf(action) === -1 && sessionToken) {
+            requestPayload.__session_token = sessionToken;
+          }
+
+          google.script.run
+            .withSuccessHandler(function (result) {
+              if (result === null || result === undefined) {
+                reject(new Error('Respon server kosong. Pastikan versi Apps Script terbaru sudah di-deploy.'));
+                return;
+              }
+
+              try {
+                const parsed = typeof result === 'string' ? JSON.parse(result) : result;
+                resolve(parsed);
+              } catch (err) {
+                reject(new Error('Respon server tidak bisa diparse.'));
+              }
+            })
+            .withFailureHandler(reject)
+            .runActionJson(action, requestPayload);
+        });
+      }
+
+      function openLoginModal() {
+        document.getElementById('loginUsernameInput').value = '';
+        document.getElementById('loginPasswordInput').value = '';
+        document.getElementById('loginModal').classList.add('active');
+      }
+
+      function closeLoginModal() {
+        document.getElementById('loginModal').classList.remove('active');
+      }
+
+      function openSetupCredentialsModal(bootstrapData) {
+        const data = bootstrapData || {};
+        document.getElementById('setupDetectedEmail').textContent = 'Email terdeteksi sistem: ' + String(data.detected_email || '-');
+        document.getElementById('setupNamaInput').value = String(data.setup_name || '');
+        document.getElementById('setupUsernameInput').value = '';
+        document.getElementById('setupPasswordInput').value = '';
+        document.getElementById('setupCredentialsModal').classList.add('active');
+      }
+
+      function closeSetupCredentialsModal() {
+        document.getElementById('setupCredentialsModal').classList.remove('active');
+      }
+
+      function onSetupCredentialsBackdropClick(event) {
+        if (event.target && event.target.id === 'setupCredentialsModal') {
+          return;
+        }
+      }
+
+      function onLoginModalBackdropClick(event) {
+        if (event.target && event.target.id === 'loginModal') {
+          return;
+        }
+      }
+
+      function setSessionToken(token) {
+        sessionToken = String(token || '').trim();
+        if (sessionToken) {
+          localStorage.setItem('kost_session_token', sessionToken);
+        } else {
+          localStorage.removeItem('kost_session_token');
+        }
+      }
+
+      function restoreSessionToken() {
+        sessionToken = String(localStorage.getItem('kost_session_token') || '').trim();
+      }
+
+      async function submitLogin() {
+        const username = String(document.getElementById('loginUsernameInput').value || '').trim();
+        const password = String(document.getElementById('loginPasswordInput').value || '').trim();
+
+        if (!username) {
+          showMessage('Username wajib diisi.', true);
+          return;
+        }
+        if (!password) {
+          showMessage('Password wajib diisi.', true);
+          return;
+        }
+
+        try {
+          showMessage('Memverifikasi akun...', false);
+          const res = await callAction('authLogin', { username: username, password: password });
+          const data = ensureApiResponse(res, 'Login gagal.');
+          setSessionToken(data && data.session_token);
+          currentSessionUser = (data && data.user) || null;
+          closeLoginModal();
+          await reloadAll();
+          startAutoRefresh();
+          showMessage('Login berhasil. Selamat datang kembali!', false);
+        } catch (err) {
+          setSessionToken('');
+          currentSessionUser = null;
+          showMessage(err.message || 'Login gagal.', true);
+          openLoginModal();
+        }
+      }
+
+      async function submitSetupCredentials() {
+        const payload = {
+          nama: String(document.getElementById('setupNamaInput').value || '').trim(),
+          username: String(document.getElementById('setupUsernameInput').value || '').trim(),
+          password: String(document.getElementById('setupPasswordInput').value || '').trim()
+        };
+
+        if (!payload.username) {
+          showMessage('Username wajib diisi.', true);
+          return;
+        }
+        if (!payload.password) {
+          showMessage('Password wajib diisi.', true);
+          return;
+        }
+
+        try {
+          showMessage('Menyimpan akun pemilik...', false);
+          const res = await callAction('authSetupCredentials', payload);
+          const data = ensureApiResponse(res, 'Gagal membuat username dan password.');
+          setSessionToken(data && data.session_token);
+          currentSessionUser = (data && data.user) || null;
+          closeSetupCredentialsModal();
+          closeLoginModal();
+          await reloadAll();
+          startAutoRefresh();
+          showMessage('Akun aktif dan berhasil masuk.', false);
+        } catch (err) {
+          showMessage(err.message || 'Gagal membuat akun.', true);
+        }
+      }
+
+      async function logoutApp() {
+        if (!sessionToken) {
+          openLoginModal();
+          return;
+        }
+
+        const confirmed = await themedConfirm('Akhiri sesi dan keluar dari dashboard?', 'Keluar Akun');
+        if (!confirmed) {
+          return;
+        }
+
+        try {
+          await callAction('authLogout', {});
+        } catch (err) {
+        }
+
+        if (autoRefreshIntervalId) {
+          clearInterval(autoRefreshIntervalId);
+          autoRefreshIntervalId = null;
+        }
+
+        setSessionToken('');
+        currentSessionUser = null;
+        document.getElementById('sessionLine').textContent = 'Belum ada sesi aktif';
+        showMessage('Sesi berhasil diakhiri.', false);
+        openLoginModal();
+      }
+
+      function ensureApiResponse(res, fallbackMessage) {
+        if (!res || typeof res.success !== 'boolean') {
+          throw new Error(fallbackMessage || 'Format respon server tidak valid.');
+        }
+
+        if (!res.success) {
+          throw new Error((res.error && res.error.message) || fallbackMessage || 'Permintaan gagal diproses.');
+        }
+
+        return res.data;
+      }
+
+      function renderRows(tbodyId, rows, columns) {
+        const tbody = document.getElementById(tbodyId);
+        tbody.innerHTML = '';
+
+        if (!rows || rows.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td colspan="' + columns.length + '" class="muted">Belum ada data</td>';
+          tbody.appendChild(tr);
+          return;
+        }
+
+        rows.forEach(function (row) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = columns.map(function (col) {
+            return '<td>' + (row[col] ?? '') + '</td>';
+          }).join('');
+          tbody.appendChild(tr);
+        });
+      }
+
+      function formatRupiah(value) {
+        const raw = String(value == null ? '' : value).trim();
+        if (!raw) {
+          return '-';
+        }
+
+        const numeric = Number(raw.toString().replace(/[^\d.-]/g, ''));
+        if (isNaN(numeric)) {
+          return raw;
+        }
+
+        return new Intl.NumberFormat('id-ID', {
+          style: 'currency',
+          currency: 'IDR',
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }).format(numeric).replace(/\s/g, '');
+      }
+
+      function renderKamarRows(rows) {
+        const tbody = document.getElementById('kamarBody');
+        tbody.innerHTML = '';
+
+        if (!rows || rows.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td colspan="7" class="muted">Tidak ada data</td>';
+          tbody.appendChild(tr);
+          return;
+        }
+
+        rows.forEach(function (row) {
+          const idKamar = String(row.id_kamar || '');
+          const fotoAction = 'openKamarFotoModal(' + JSON.stringify(idKamar) + ')';
+          const fasilitasAction = 'openKamarFasilitasInfoModal(' + JSON.stringify(idKamar) + ')';
+          const tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + escapeHtml(idKamar || '-') + '</td>' +
+            '<td>' + escapeHtml(row.id_kost || '-') + '</td>' +
+            '<td>' + escapeHtml(row.nama_kamar || '-') + '</td>' +
+            '<td>' + escapeHtml(formatRupiah(row.harga_bulanan)) + '</td>' +
+            '<td><button class="action-btn" onclick=\'' + fotoAction + '\'>Link</button></td>' +
+            '<td><button class="action-btn" onclick=\'' + fasilitasAction + '\'>Info</button></td>' +
+            '<td>' + getStatusBadge(row.status_ketersediaan || '-') + '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      function getKamarById(idKamar) {
+        return kamarRows.find(function (item) {
+          return String(item.id_kamar || '') === String(idKamar || '');
+        }) || null;
+      }
+
+      function splitSemicolonCell(value) {
+        return String(value || '')
+          .split(';')
+          .map(function (item) { return String(item || '').trim(); })
+          .filter(function (item) { return item !== ''; });
+      }
+
+      function openKamarFotoModal(idKamar) {
+        const kamar = getKamarById(idKamar);
+        if (!kamar) {
+          showMessage('Data kamar tidak ditemukan.', true);
+          return;
+        }
+
+        activeKamarFotoId = String(idKamar || '').trim();
+        document.getElementById('kamarFotoLabel').textContent = 'Foto kamar: ' + String(kamar.nama_kamar || activeKamarFotoId);
+        renderKamarFotoGrid(kamar);
+        document.getElementById('kamarFotoModal').classList.add('active');
+      }
+
+      function closeKamarFotoModal() {
+        document.getElementById('kamarFotoModal').classList.remove('active');
+      }
+
+      function onKamarFotoModalBackdropClick(event) {
+        if (event.target && event.target.id === 'kamarFotoModal') {
+          closeKamarFotoModal();
+        }
+      }
+
+      function renderKamarFotoGrid(kamar) {
+        const grid = document.getElementById('kamarFotoGrid');
+        if (!grid) {
+          return;
+        }
+
+        const fotoUrls = splitSemicolonCell(kamar && kamar.foto_url);
+        grid.innerHTML = '';
+
+        if (!fotoUrls.length) {
+          grid.innerHTML = '<div class="muted">Belum ada foto kamar.</div>';
+          return;
+        }
+
+        fotoUrls.forEach(function (url) {
+          const card = document.createElement('div');
+          card.className = 'photo-card';
+
+          const img = document.createElement('img');
+          img.src = url;
+          img.alt = 'Foto kamar';
+
+          const actions = document.createElement('div');
+          actions.className = 'inline-actions';
+
+          const openBtn = document.createElement('button');
+          openBtn.className = 'action-btn';
+          openBtn.textContent = 'Buka';
+          openBtn.onclick = function () {
+            window.open(url, '_blank');
+          };
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'action-btn danger';
+          deleteBtn.textContent = 'Hapus';
+          deleteBtn.onclick = function () {
+            deleteKamarPhoto(activeKamarFotoId, url);
+          };
+
+          actions.appendChild(openBtn);
+          actions.appendChild(deleteBtn);
+          card.appendChild(img);
+          card.appendChild(actions);
+          grid.appendChild(card);
+        });
+      }
+
+      async function deleteKamarPhoto(idKamar, photoUrl) {
+        if (!idKamar || !photoUrl) {
+          showMessage('Data foto kamar tidak valid.', true);
+          return;
+        }
+
+        const confirmed = await themedConfirm('Hapus foto ini dari data kamar dan Drive?', 'Hapus Foto');
+        if (!confirmed) {
+          return;
+        }
+
+        try {
+          showMessage('Menghapus foto kamar...', false);
+          const res = await callAction('deleteKamarPhoto', {
+            id_kamar: idKamar,
+            photo_url: photoUrl
+          });
+          ensureApiResponse(res, 'Gagal menghapus foto kamar.');
+          await loadKamar();
+          const refreshed = getKamarById(idKamar);
+          if (refreshed) {
+            renderKamarFotoGrid(refreshed);
+          }
+          showMessage('Foto kamar berhasil dihapus.', false);
+        } catch (err) {
+          showMessage(err.message || 'Gagal menghapus foto kamar.', true);
+        }
+      }
+
+      function openKamarFasilitasInfoModal(idKamar) {
+        const kamar = getKamarById(idKamar);
+        if (!kamar) {
+          showMessage('Data kamar tidak ditemukan.', true);
+          return;
+        }
+
+        activeKamarFasilitasId = String(idKamar || '').trim();
+        document.getElementById('kamarFasilitasInfoLabel').textContent = 'Fasilitas kamar: ' + String(kamar.nama_kamar || activeKamarFasilitasId);
+
+        const listElement = document.getElementById('kamarFasilitasInfoList');
+        const fasilitas = splitSemicolonCell(kamar.fasilitas || '');
+        listElement.innerHTML = '';
+
+        if (!fasilitas.length) {
+          const empty = document.createElement('li');
+          empty.textContent = 'Belum ada fasilitas.';
+          listElement.appendChild(empty);
+        } else {
+          fasilitas.forEach(function (item) {
+            const li = document.createElement('li');
+            li.textContent = item;
+            listElement.appendChild(li);
+          });
+        }
+
+        document.getElementById('kamarFasilitasInfoModal').classList.add('active');
+      }
+
+      function closeKamarFasilitasInfoModal() {
+        document.getElementById('kamarFasilitasInfoModal').classList.remove('active');
+      }
+
+      function onKamarFasilitasInfoBackdropClick(event) {
+        if (event.target && event.target.id === 'kamarFasilitasInfoModal') {
+          closeKamarFasilitasInfoModal();
+        }
+      }
+
+      function openEditFasilitasFromInfo() {
+        if (!activeKamarFasilitasId) {
+          showMessage('ID kamar fasilitas tidak tersedia.', true);
+          return;
+        }
+
+        closeKamarFasilitasInfoModal();
+        openFasilitasKamarModal(activeKamarFasilitasId);
+      }
+
+      function renderKostRows(rows) {
+        const tbody = document.getElementById('kostBody');
+        tbody.innerHTML = '';
+
+        if (!rows || rows.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td colspan="6" class="muted">Tidak ada data</td>';
+          tbody.appendChild(tr);
+          return;
+        }
+
+        rows.forEach(function (row) {
+          const idKost = String(row.id_kost || '');
+          const mapsUrl = String(row.maps_url || '').trim();
+          const mapsCell = mapsUrl
+            ? '<a href="' + escapeHtml(mapsUrl) + '" target="_blank" rel="noopener noreferrer" class="muted">Buka Maps</a>'
+            : '<span class="muted">-</span>';
+          const editAction = 'openKostModal(' + JSON.stringify(idKost) + ')';
+          const deleteAction = 'deleteKost(' + JSON.stringify(idKost) + ')';
+          const actions =
+            '<div class="inline-actions">' +
+            '<button class="action-btn" onclick=\'' + editAction + '\'>Edit</button>' +
+            '<button class="action-btn danger" onclick=\'' + deleteAction + '\'>Hapus</button>' +
+            '</div>';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + escapeHtml(idKost) + '</td>' +
+            '<td>' + escapeHtml(row.nama) + '</td>' +
+            '<td>' + escapeHtml(row.alamat) + '</td>' +
+            '<td>' + mapsCell + '</td>' +
+            '<td>' + escapeHtml(row.status_publish || 'draft') + '</td>' +
+            '<td>' + actions + '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      function getKostById(idKost) {
+        return kostRows.find(function (item) {
+          return String(item.id_kost || '') === String(idKost || '');
+        }) || null;
+      }
+
+      function populateKostOptionsForKamar() {
+        const select = document.getElementById('kamarKostInput');
+        if (!select) {
+          return;
+        }
+
+        select.innerHTML = '';
+        if (!kostRows.length) {
+          const emptyOption = document.createElement('option');
+          emptyOption.value = '';
+          emptyOption.textContent = 'Belum ada data kost';
+          select.appendChild(emptyOption);
+          return;
+        }
+
+        kostRows.forEach(function (kost) {
+          const option = document.createElement('option');
+          option.value = String(kost.id_kost || '');
+          option.textContent = String(kost.id_kost || '-') + ' - ' + String(kost.nama || '-');
+          select.appendChild(option);
+        });
+      }
+
+      function resetKamarModalForm() {
+        document.getElementById('kamarNamaInput').value = '';
+        document.getElementById('kamarHargaInput').value = '';
+        document.getElementById('kamarUkuranInput').value = '';
+        document.getElementById('kamarFasilitasSummary').value = '';
+        document.getElementById('kamarFotoInput').value = '';
+        selectedKamarFasilitas = [];
+        updateKamarFasilitasSummary();
+      }
+
+      function openKamarModal() {
+        populateKostOptionsForKamar();
+        resetKamarModalForm();
+        document.getElementById('kamarModal').classList.add('active');
+      }
+
+      function closeKamarModal() {
+        document.getElementById('kamarModal').classList.remove('active');
+      }
+
+      function onKamarModalBackdropClick(event) {
+        if (event.target && event.target.id === 'kamarModal') {
+          closeKamarModal();
+        }
+      }
+
+      function normalizeFasilitasName(value) {
+        return String(value || '').replace(/\s+/g, ' ').trim();
+      }
+
+      function updateKamarFasilitasSummary() {
+        const summary = document.getElementById('kamarFasilitasSummary');
+        if (!summary) {
+          return;
+        }
+
+        summary.value = selectedKamarFasilitas.length
+          ? selectedKamarFasilitas.join('; ')
+          : '';
+        summary.placeholder = selectedKamarFasilitas.length
+          ? ''
+          : 'Belum ada fasilitas dipilih';
+      }
+
+      function renderSelectedFasilitasList() {
+        const box = document.getElementById('fasilitasKamarSelectedList');
+        if (!box) {
+          return;
+        }
+
+        if (!selectedKamarFasilitas.length) {
+          box.textContent = 'Belum ada fasilitas.';
+          return;
+        }
+
+        box.textContent = selectedKamarFasilitas.join('; ');
+      }
+
+      function syncPresetChecksFromSelected() {
+        document.querySelectorAll('#fasilitasPresetGrid input[type="checkbox"]').forEach(function (checkbox) {
+          const value = normalizeFasilitasName(checkbox.value);
+          checkbox.checked = selectedKamarFasilitas.indexOf(value) >= 0;
+        });
+      }
+
+      function openFasilitasKamarModal(editKamarId) {
+        const kamarId = String(editKamarId || '').trim();
+        if (kamarId) {
+          const kamar = getKamarById(kamarId);
+          if (!kamar) {
+            showMessage('Data kamar tidak ditemukan.', true);
+            return;
+          }
+
+          selectedKamarFasilitas = splitSemicolonCell(kamar.fasilitas || '');
+          activeKamarFasilitasId = kamarId;
+          document.getElementById('fasilitasKamarTitle').textContent = 'Fasilitas Kamar (Edit)';
+        } else {
+          activeKamarFasilitasId = '';
+          document.getElementById('fasilitasKamarTitle').textContent = 'Fasilitas Kamar';
+        }
+
+        syncPresetChecksFromSelected();
+        renderSelectedFasilitasList();
+        resetManualFasilitasInputs();
+        document.getElementById('fasilitasKamarModal').classList.add('active');
+      }
+
+      function closeFasilitasKamarModal() {
+        document.getElementById('fasilitasKamarModal').classList.remove('active');
+      }
+
+      function onFasilitasKamarBackdropClick(event) {
+        if (event.target && event.target.id === 'fasilitasKamarModal') {
+          closeFasilitasKamarModal();
+        }
+      }
+
+      function resetManualFasilitasInputs() {
+        const container = document.getElementById('manualFasilitasInputs');
+        if (!container) {
+          return;
+        }
+
+        const inputItems = container.querySelectorAll('.manual-input-item');
+        inputItems.forEach(function (item) {
+          item.remove();
+        });
+
+        manualFasilitasCounter = 0;
+        addManualInputColumn();
+        addManualInputColumn();
+        addManualInputColumn();
+      }
+
+      function addManualInputColumn() {
+        const container = document.getElementById('manualFasilitasInputs');
+        if (!container) {
+          return;
+        }
+
+        manualFasilitasCounter += 1;
+        const inputItem = document.createElement('div');
+        inputItem.className = 'manual-input-item';
+
+        const input = document.createElement('input');
+        input.className = 'field-input manual-fasilitas-input';
+        input.placeholder = 'kolom input' + String(manualFasilitasCounter);
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'manual-remove-btn';
+        removeButton.textContent = 'x';
+        removeButton.onclick = function () {
+          removeManualInputColumn(removeButton);
+        };
+
+        inputItem.appendChild(input);
+        inputItem.appendChild(removeButton);
+
+        const actionRow = container.querySelector('.manual-action-row');
+        container.insertBefore(inputItem, actionRow);
+        input.focus();
+      }
+
+      function removeManualInputColumn(buttonElement) {
+        const container = document.getElementById('manualFasilitasInputs');
+        if (!container) {
+          return;
+        }
+
+        const items = container.querySelectorAll('.manual-input-item');
+        if (items.length <= 1) {
+          showMessage('Minimal harus ada 1 kolom input.', true);
+          return;
+        }
+
+        const targetItem = buttonElement && buttonElement.closest('.manual-input-item');
+        if (!targetItem) {
+          return;
+        }
+
+        targetItem.remove();
+
+        const remainingInputs = Array.from(container.querySelectorAll('.manual-fasilitas-input'));
+        remainingInputs.forEach(function (input, index) {
+          input.placeholder = 'kolom input' + String(index + 1);
+        });
+        manualFasilitasCounter = remainingInputs.length;
+      }
+
+      function pushFasilitasIfMissing(value) {
+        const normalized = normalizeFasilitasName(value);
+        if (!normalized) {
+          return;
+        }
+        if (selectedKamarFasilitas.indexOf(normalized) === -1) {
+          selectedKamarFasilitas.push(normalized);
+        }
+      }
+
+      function removeFasilitasIfExists(value) {
+        const normalized = normalizeFasilitasName(value);
+        selectedKamarFasilitas = selectedKamarFasilitas.filter(function (item) {
+          return item !== normalized;
+        });
+      }
+
+      function toggleFasilitasPreset(checkbox) {
+        const value = normalizeFasilitasName(checkbox && checkbox.value);
+        if (!value) {
+          return;
+        }
+
+        if (checkbox.checked) {
+          pushFasilitasIfMissing(value);
+        } else {
+          removeFasilitasIfExists(value);
+        }
+
+        renderSelectedFasilitasList();
+      }
+
+      function addManualFasilitasKamar() {
+        const inputs = Array.from(document.querySelectorAll('#manualFasilitasInputs .manual-fasilitas-input'));
+        let added = 0;
+
+        inputs.forEach(function (input) {
+          const value = normalizeFasilitasName(input && input.value);
+          if (!value) {
+            return;
+          }
+          const beforeSize = selectedKamarFasilitas.length;
+          pushFasilitasIfMissing(value);
+          if (selectedKamarFasilitas.length > beforeSize) {
+            added += 1;
+          }
+          input.value = '';
+        });
+
+        renderSelectedFasilitasList();
+        if (added === 0) {
+          showMessage('Isi minimal satu kolom input manual yang belum ada.', true);
+        } else {
+          showMessage('Fasilitas manual berhasil ditambahkan.', false);
+        }
+      }
+
+      async function saveFasilitasKamarModal() {
+        if (activeKamarFasilitasId) {
+          try {
+            showMessage('Menyimpan fasilitas kamar...', false);
+            const res = await callAction('updateKamarFasilitas', {
+              id_kamar: activeKamarFasilitasId,
+              fasilitas: selectedKamarFasilitas.join('; ')
+            });
+            ensureApiResponse(res, 'Gagal menyimpan fasilitas kamar.');
+            await loadKamar();
+            closeFasilitasKamarModal();
+            showMessage('Fasilitas kamar berhasil diperbarui.', false);
+            return;
+          } catch (err) {
+            showMessage(err.message || 'Gagal menyimpan fasilitas kamar.', true);
+            return;
+          }
+        }
+
+        updateKamarFasilitasSummary();
+        closeFasilitasKamarModal();
+      }
+
+      function collectKamarFiturValue() {
+        return selectedKamarFasilitas.join('; ');
+      }
+
+      function readFileAsBase64(file) {
+        return new Promise(function (resolve, reject) {
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            const result = String((event && event.target && event.target.result) || '');
+            const base64 = result.indexOf(',') >= 0 ? result.split(',')[1] : result;
+            resolve(base64);
+          };
+          reader.onerror = function () {
+            reject(new Error('Gagal membaca file gambar.'));
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      async function collectKamarImagesPayload() {
+        const input = document.getElementById('kamarFotoInput');
+        const files = Array.from((input && input.files) || []);
+
+        if (files.length > 5) {
+          throw new Error('Maksimal upload 5 gambar kamar.');
+        }
+
+        const payload = [];
+        for (let i = 0; i < files.length; i += 1) {
+          const file = files[i];
+          const mimeType = String(file.type || '').trim();
+          if (mimeType.indexOf('image/') !== 0) {
+            throw new Error('Semua file harus berupa gambar.');
+          }
+
+          payload.push({
+            originalName: String(file.name || ''),
+            mimeType: mimeType,
+            dataBase64: await readFileAsBase64(file)
+          });
+        }
+
+        return payload;
+      }
+
+      async function submitKamarModal() {
+        if (isSavingKamar) {
+          showMessage('Penyimpanan kamar sedang diproses.', true);
+          return;
+        }
+
+        const payload = {
+          id_kost: String(document.getElementById('kamarKostInput').value || '').trim(),
+          nama_kamar: String(document.getElementById('kamarNamaInput').value || '').trim(),
+          harga_bulanan: String(document.getElementById('kamarHargaInput').value || '').trim(),
+          ukuran: String(document.getElementById('kamarUkuranInput').value || '').trim(),
+          fasilitas: collectKamarFiturValue(),
+          images: []
+        };
+
+        if (!payload.id_kost) {
+          showMessage('ID kost wajib dipilih.', true);
+          return;
+        }
+
+        if (!payload.nama_kamar) {
+          showMessage('Nama kamar wajib diisi.', true);
+          return;
+        }
+
+        if (!payload.harga_bulanan) {
+          showMessage('Harga bulanan wajib diisi.', true);
+          return;
+        }
+
+        try {
+          isSavingKamar = true;
+          showMessage('Menyimpan data kamar...', false);
+          payload.images = await collectKamarImagesPayload();
+          const res = await callAction('createKamar', payload);
+          ensureApiResponse(res, 'Gagal menyimpan data kamar.');
+          await loadKamar();
+          closeKamarModal();
+          showMessage('Data kamar berhasil disimpan.', false);
+        } catch (err) {
+          showMessage(err.message || 'Gagal menyimpan data kamar.', true);
+        } finally {
+          isSavingKamar = false;
+        }
+      }
+
+      function openPenggunaModal() {
+        document.getElementById('penggunaNamaInput').value = '';
+        document.getElementById('penggunaNoHpInput').value = '';
+        populateKamarOptionsForPengguna();
+        document.getElementById('penggunaSampaiInput').value = '';
+        document.getElementById('penggunaBayarInput').value = 'tidak';
+        document.getElementById('penggunaModal').classList.add('active');
+      }
+
+      function populateKamarOptionsForPengguna() {
+        const select = document.getElementById('penggunaKamarInput');
+        if (!select) {
+          return;
+        }
+
+        select.innerHTML = '';
+        if (!kamarRows.length) {
+          const emptyOption = document.createElement('option');
+          emptyOption.value = '';
+          emptyOption.textContent = 'Belum ada data kamar';
+          select.appendChild(emptyOption);
+          return;
+        }
+
+        kamarRows.forEach(function (kamar) {
+          const option = document.createElement('option');
+          option.value = String(kamar.id_kamar || '');
+          option.textContent = String(kamar.id_kamar || '-') + ' - ' + String(kamar.nama_kamar || '-');
+          select.appendChild(option);
+        });
+      }
+
+      function populateKamarOptionsForTestBooking() {
+        const select = document.getElementById('testBookingKamar');
+        if (!select) {
+          return;
+        }
+
+        select.innerHTML = '';
+        if (!kamarRows.length) {
+          const emptyOption = document.createElement('option');
+          emptyOption.value = '';
+          emptyOption.textContent = 'Belum ada data kamar';
+          select.appendChild(emptyOption);
+          return;
+        }
+
+        kamarRows.forEach(function (kamar) {
+          const option = document.createElement('option');
+          option.value = String(kamar.id_kamar || '');
+          option.textContent = String(kamar.id_kamar || '-') + ' - ' + String(kamar.nama_kamar || '-');
+          select.appendChild(option);
+        });
+      }
+
+      function closePenggunaModal() {
+        document.getElementById('penggunaModal').classList.remove('active');
+      }
+
+      function onPenggunaModalBackdropClick(event) {
+        if (event.target && event.target.id === 'penggunaModal') {
+          closePenggunaModal();
+        }
+      }
+
+      async function submitPenggunaModal() {
+        if (isSavingPengguna) {
+          showMessage('Penyimpanan pengguna sedang diproses.', true);
+          return;
+        }
+
+        const payload = {
+          nama: String(document.getElementById('penggunaNamaInput').value || '').trim(),
+          no_hp: String(document.getElementById('penggunaNoHpInput').value || '').trim(),
+          id_kamar: String(document.getElementById('penggunaKamarInput').value || '').trim(),
+          ngekost_sampai: String(document.getElementById('penggunaSampaiInput').value || '').trim(),
+          bayar_bulan_ini: String(document.getElementById('penggunaBayarInput').value || 'tidak').trim()
+        };
+
+        if (!payload.nama) {
+          showMessage('Nama pengguna wajib diisi.', true);
+          return;
+        }
+        if (!payload.id_kamar) {
+          showMessage('ID kamar wajib diisi.', true);
+          return;
+        }
+        if (!payload.ngekost_sampai) {
+          showMessage('Bulan ngekost sampai wajib diisi.', true);
+          return;
+        }
+
+        try {
+          isSavingPengguna = true;
+          showMessage('Menyimpan pengguna...', false);
+          const res = await callAction('createPengguna', payload);
+          ensureApiResponse(res, 'Gagal menyimpan pengguna.');
+          await loadPengguna();
+          closePenggunaModal();
+          showMessage('Pengguna berhasil ditambahkan.', false);
+        } catch (err) {
+          showMessage(err.message || 'Gagal menyimpan pengguna.', true);
+        } finally {
+          isSavingPengguna = false;
+        }
+      }
+
+      function getYesNoBadge(value) {
+        const normalized = String(value || '').toLowerCase();
+        if (normalized === 'ya') {
+          return '<span class="status-badge status-diterima">sudah</span>';
+        }
+        return '<span class="status-badge status-ditolak">tidak</span>';
+      }
+
+      function normalizeMonthValueForUi(value) {
+        const text = String(value || '').trim();
+        if (!text || text === '-') {
+          return '-';
+        }
+
+        const directMatch = text.match(/^(\d{4})-(\d{2})$/);
+        if (directMatch) {
+          return directMatch[1] + '-' + directMatch[2];
+        }
+
+        const isoMatch = text.match(/^(\d{4})-(\d{2})-\d{2}/);
+        if (isoMatch) {
+          return isoMatch[1] + '-' + isoMatch[2];
+        }
+
+        const date = new Date(text);
+        if (!isNaN(date.getTime())) {
+          return String(date.getFullYear()) + '-' + String(date.getMonth() + 1).padStart(2, '0');
+        }
+
+        return String(value || '-');
+      }
+
+      function formatMonthYearLabel(value) {
+        const normalized = normalizeMonthValueForUi(value);
+        if (normalized === '-') {
+          return '-';
+        }
+
+        const parts = normalized.split('-');
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10);
+        const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+          return normalized;
+        }
+
+        return monthNames[month - 1] + ' ' + String(year);
+      }
+
+      function isEndMonthPassed(value) {
+        const normalized = normalizeMonthValueForUi(value);
+        if (normalized === '-') {
+          return false;
+        }
+
+        const now = new Date();
+        const currentYearMonth = String(now.getFullYear()) + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        return normalized < currentYearMonth;
+      }
+
+      function renderPenggunaRows(rows) {
+        const tbody = document.getElementById('penggunaBody');
+        tbody.innerHTML = '';
+
+        if (!rows || rows.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td colspan="9" class="muted">Tidak ada data pengguna</td>';
+          tbody.appendChild(tr);
+          return;
+        }
+
+        rows.forEach(function (row) {
+          const id = String(row.id_pengguna || '');
+          const paid = String(row.bayar_bulan_ini || 'tidak').toLowerCase() === 'ya';
+          const status = String(row.status || 'aktif').toLowerCase();
+          const endMonthRaw = normalizeMonthValueForUi(row.ngekost_sampai || '-');
+          const endMonthLabel = formatMonthYearLabel(endMonthRaw);
+          const shouldAskContinue = status === 'aktif' && isEndMonthPassed(endMonthRaw);
+          const continueAction = 'promptLanjutPengguna(' + JSON.stringify(id) + ', ' + JSON.stringify(endMonthRaw) + ')';
+          const payAction = 'markPenggunaPaid(' + JSON.stringify(id) + ')';
+          const finishAction = 'finishPengguna(' + JSON.stringify(id) + ')';
+
+          const actionButtons =
+            '<div class="inline-actions">' +
+            '<button class="action-btn danger" onclick=\'' + finishAction + '\'>Selesai</button>' +
+            '</div>';
+
+          const continueButton = shouldAskContinue
+            ? '<div style="margin-top: 6px;"><button class="action-btn" onclick=\'' + continueAction + '\'>Apakah lanjut?</button></div>'
+            : '';
+
+          const bayarCell =
+            '<div class="inline-actions">' +
+            getYesNoBadge(row.bayar_bulan_ini || 'tidak') +
+            (status === 'aktif' && !paid
+              ? '<button class="action-btn" title="Set sudah bayar" onclick=\'' + payAction + '\'>✅</button>'
+              : '') +
+            '</div>';
+
+          const tagihanText = formatRupiah(row.tagihan || '0');
+          const tagihanClass = paid ? 'status-badge status-diterima' : 'status-badge status-ditolak';
+          const tagihanCell = '<span class="' + tagihanClass + '">' + escapeHtml(tagihanText) + '</span>';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + escapeHtml(id) + '</td>' +
+            '<td>' + escapeHtml(row.nama || '-') + '</td>' +
+            '<td>' + escapeHtml(row.no_hp || '-') + '</td>' +
+            '<td>' + escapeHtml(row.id_kamar || '-') + '</td>' +
+            '<td>' + escapeHtml(endMonthLabel) + continueButton + '</td>' +
+            '<td>' + bayarCell + '</td>' +
+            '<td>' + tagihanCell + '</td>' +
+            '<td>' + getStatusBadge(status) + '</td>' +
+            '<td>' + actionButtons + '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function promptLanjutPengguna(idPengguna, currentEndMonth) {
+        if (!idPengguna) {
+          showMessage('ID pengguna tidak valid.', true);
+          return;
+        }
+
+        const isContinue = await themedConfirm('Apakah lanjut ngekost?', 'Konfirmasi Lanjut');
+        if (!isContinue) {
+          showMessage('Perpanjangan dibatalkan.', false);
+          return;
+        }
+
+        const defaultMonth = normalizeMonthValueForUi(currentEndMonth);
+        const input = await themedPrompt(
+          'Masukkan bulan dan tahun baru (format YYYY-MM):',
+          defaultMonth === '-' ? '' : defaultMonth,
+          'Input Perpanjangan',
+          'YYYY-MM'
+        );
+        if (input === null) {
+          return;
+        }
+
+        const targetMonth = String(input || '').trim();
+        if (!/^\d{4}-\d{2}$/.test(targetMonth)) {
+          showMessage('Format bulan harus YYYY-MM.', true);
+          return;
+        }
+
+        try {
+          showMessage('Mengupdate periode ngekost...', false);
+          const res = await callAction('updatePenggunaEndMonth', {
+            id_pengguna: idPengguna,
+            ngekost_sampai: targetMonth
+          });
+          ensureApiResponse(res, 'Gagal update periode ngekost.');
+          await loadPengguna();
+          showMessage('Periode ngekost berhasil diupdate.', false);
+        } catch (err) {
+          showMessage(err.message || 'Gagal update periode ngekost.', true);
+        }
+      }
+
+      async function markPenggunaPaid(idPengguna) {
+        if (!idPengguna) {
+          showMessage('ID pengguna tidak valid.', true);
+          return;
+        }
+
+        try {
+          showMessage('Mengupdate status bayar pengguna...', false);
+          const res = await callAction('setPenggunaPaidThisMonth', {
+            id_pengguna: idPengguna,
+            bayar_bulan_ini: 'ya'
+          });
+          ensureApiResponse(res, 'Gagal update status bayar.');
+          await loadPengguna();
+          showMessage('Status bayar berubah menjadi sudah.', false);
+        } catch (err) {
+          showMessage(err.message || 'Gagal update status bayar.', true);
+        }
+      }
+
+      async function addPenggunaMonth(idPengguna) {
+        if (!idPengguna) {
+          showMessage('ID pengguna tidak valid.', true);
+          return;
+        }
+
+        try {
+          showMessage('Menambahkan 1 bulan masa kost...', false);
+          const res = await callAction('addPenggunaMonth', { id_pengguna: idPengguna, month_count: 1 });
+          ensureApiResponse(res, 'Gagal menambah bulan kost.');
+          await loadPengguna();
+          showMessage('Masa kost berhasil ditambah 1 bulan.', false);
+        } catch (err) {
+          showMessage(err.message || 'Gagal menambah bulan kost.', true);
+        }
+      }
+
+      async function togglePenggunaPaid(idPengguna, paidValue) {
+        if (!idPengguna) {
+          showMessage('ID pengguna tidak valid.', true);
+          return;
+        }
+
+        try {
+          showMessage('Mengupdate status bayar pengguna...', false);
+          const res = await callAction('setPenggunaPaidThisMonth', {
+            id_pengguna: idPengguna,
+            bayar_bulan_ini: paidValue
+          });
+          ensureApiResponse(res, 'Gagal update status bayar.');
+          await loadPengguna();
+          showMessage('Status bayar pengguna berhasil diupdate.', false);
+        } catch (err) {
+          showMessage(err.message || 'Gagal update status bayar.', true);
+        }
+      }
+
+      async function finishPengguna(idPengguna) {
+        if (!idPengguna) {
+          showMessage('ID pengguna tidak valid.', true);
+          return;
+        }
+
+        const confirmed = await themedConfirm('Set pengguna ini sebagai selesai ngekost?', 'Selesaikan Pengguna');
+        if (!confirmed) {
+          return;
+        }
+
+        try {
+          showMessage('Memproses status selesai...', false);
+          const res = await callAction('finishPengguna', { id_pengguna: idPengguna });
+          ensureApiResponse(res, 'Gagal menyelesaikan data pengguna.');
+          await loadPengguna();
+          showMessage('Pengguna ditandai selesai. Ngekost sampai jadi "-".', false);
+        } catch (err) {
+          showMessage(err.message || 'Gagal menyelesaikan data pengguna.', true);
+        }
+      }
+
+      function openKostModal(idKost) {
+        const isEdit = !!idKost;
+        document.getElementById('kostModalTitle').textContent = isEdit ? 'Edit Kost' : 'Tambah Kost';
+        document.getElementById('kostFormId').value = isEdit ? String(idKost) : '';
+
+        if (isEdit) {
+          const data = getKostById(idKost);
+          if (!data) {
+            showMessage('Data kost tidak ditemukan.', true);
+            return;
+          }
+          document.getElementById('kostNamaInput').value = String(data.nama || '');
+          document.getElementById('kostAlamatInput').value = String(data.alamat || '');
+          document.getElementById('kostMapsInput').value = String(data.maps_url || '');
+          document.getElementById('kostPublishInput').value = String(data.status_publish || 'draft');
+        } else {
+          document.getElementById('kostNamaInput').value = '';
+          document.getElementById('kostAlamatInput').value = '';
+          document.getElementById('kostMapsInput').value = '';
+          document.getElementById('kostPublishInput').value = 'draft';
+        }
+
+        document.getElementById('kostModal').classList.add('active');
+      }
+
+      function closeKostModal() {
+        document.getElementById('kostModal').classList.remove('active');
+      }
+
+      function onKostModalBackdropClick(event) {
+        if (event.target && event.target.id === 'kostModal') {
+          closeKostModal();
+        }
+      }
+
+      function openGoogleMapsFromForm() {
+        const mapsInput = String(document.getElementById('kostMapsInput').value || '').trim();
+        const alamatInput = String(document.getElementById('kostAlamatInput').value || '').trim();
+        const mapsUrl = mapsInput || ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(alamatInput || 'kost'));
+        window.open(mapsUrl, '_blank');
+      }
+
+      async function submitKostModal() {
+        if (isSavingKost) {
+          showMessage('Penyimpanan kost sedang diproses.', true);
+          return;
+        }
+
+        const payload = {
+          id_kost: String(document.getElementById('kostFormId').value || '').trim(),
+          nama: String(document.getElementById('kostNamaInput').value || '').trim(),
+          alamat: String(document.getElementById('kostAlamatInput').value || '').trim(),
+          maps_url: String(document.getElementById('kostMapsInput').value || '').trim(),
+          status_publish: String(document.getElementById('kostPublishInput').value || 'draft').trim()
+        };
+
+        if (!payload.nama) {
+          showMessage('Nama kost wajib diisi.', true);
+          return;
+        }
+
+        if (!payload.alamat) {
+          showMessage('Alamat manual wajib diisi.', true);
+          return;
+        }
+
+        try {
+          isSavingKost = true;
+          showMessage('Menyimpan data kost...', false);
+          const res = await callAction('upsertKost', payload);
+          ensureApiResponse(res, 'Gagal menyimpan data kost.');
+          await loadKost();
+          closeKostModal();
+          showMessage('Data kost berhasil disimpan.', false);
+        } catch (err) {
+          showMessage(err.message || 'Gagal menyimpan data kost.', true);
+        } finally {
+          isSavingKost = false;
+        }
+      }
+
+      async function deleteKost(idKost) {
+        if (!idKost) {
+          showMessage('ID kost tidak valid.', true);
+          return;
+        }
+
+        const confirmed = await themedConfirm('Hapus data kost ' + idKost + '?', 'Hapus Kost');
+        if (!confirmed) {
+          return;
+        }
+
+        try {
+          showMessage('Menghapus data kost...', false);
+          const res = await callAction('deleteKost', { id_kost: idKost });
+          ensureApiResponse(res, 'Gagal menghapus data kost.');
+          await loadKost();
+          showMessage('Data kost berhasil dihapus.', false);
+        } catch (err) {
+          showMessage(err.message || 'Gagal menghapus data kost.', true);
+        }
+      }
+
+      function escapeHtml(text) {
+        return String(text ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function getStatusBadge(status) {
+        const normalized = String(status || '').toLowerCase();
+        const className = 'status-badge status-' + normalized.replace(/\s+/g, '-');
+        return '<span class="' + className + '">' + escapeHtml(normalized || '-') + '</span>';
+      }
+
+      function formatDateTimeLabel(value) {
+        const text = String(value || '').trim();
+        if (!text) {
+          return '-';
+        }
+
+        const parsed = new Date(text);
+        if (isNaN(parsed.getTime())) {
+          return text;
+        }
+
+        return new Intl.DateTimeFormat('id-ID', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }).format(parsed);
+      }
+
+      function renderBookingRows(rows) {
+        const tbody = document.getElementById('bookingBody');
+        tbody.innerHTML = '';
+
+        if (!rows || rows.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td colspan="6" class="muted">Tidak ada data booking</td>';
+          tbody.appendChild(tr);
+          return;
+        }
+
+        rows.forEach(function (row) {
+          const tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + escapeHtml(row.id_booking) + '</td>' +
+            '<td>' + escapeHtml(row.nama) + '</td>' +
+            '<td>' + escapeHtml(row.no_hp) + '</td>' +
+            '<td>' + escapeHtml(row.id_kamar) + '</td>' +
+            '<td>' + getStatusBadge(row.status) + '</td>' +
+            '<td>' + escapeHtml(formatDateTimeLabel(row.created_at)) + '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      function getBookingsByStatus(statusAwal) {
+        const normalized = String(statusAwal || '').toLowerCase();
+        return bookingRows.filter(function (row) {
+          return String(row.status || '').toLowerCase() === normalized;
+        });
+      }
+
+      function syncBookingTargetsByStatus() {
+        const statusAwal = document.getElementById('modalStatusAwal').value;
+        const targetSelect = document.getElementById('modalBookingTarget');
+        const options = getBookingsByStatus(statusAwal);
+
+        targetSelect.innerHTML = '';
+        if (!options.length) {
+          const option = document.createElement('option');
+          option.value = '';
+          option.textContent = 'Tidak ada booking dengan status ini';
+          targetSelect.appendChild(option);
+          return;
+        }
+
+        options.forEach(function (row) {
+          const option = document.createElement('option');
+          option.value = String(row.id_booking || '');
+          option.textContent = String(row.nama || '-') + ' (' + String(row.id_booking || '-') + ')';
+          targetSelect.appendChild(option);
+        });
+      }
+
+      function openUpdateBookingModal() {
+        document.getElementById('modalStatusAwal').value = 'baru';
+        document.getElementById('modalStatusUpdate').value = 'diproses';
+        document.getElementById('modalNgekostDari').value = '';
+        document.getElementById('modalNgekostSampai').value = '';
+        onBookingStatusUpdateChange();
+        syncBookingTargetsByStatus();
+        document.getElementById('updateBookingModal').classList.add('active');
+      }
+
+      function onBookingStatusUpdateChange() {
+        const statusUpdate = String(document.getElementById('modalStatusUpdate').value || '').toLowerCase();
+        const periodField = document.getElementById('modalAcceptPeriodField');
+        if (!periodField) {
+          return;
+        }
+
+        periodField.style.display = statusUpdate === 'diterima' ? 'grid' : 'none';
+      }
+
+      function closeUpdateBookingModal() {
+        document.getElementById('updateBookingModal').classList.remove('active');
+      }
+
+      function onModalBackdropClick(event) {
+        if (event.target && event.target.id === 'updateBookingModal') {
+          closeUpdateBookingModal();
+        }
+      }
+
+      async function submitUpdateBookingModal() {
+        const statusAwal = document.getElementById('modalStatusAwal').value;
+        const bookingId = document.getElementById('modalBookingTarget').value;
+        const statusUpdate = document.getElementById('modalStatusUpdate').value;
+        const ngekostDari = String(document.getElementById('modalNgekostDari').value || '').trim();
+        const ngekostSampai = String(document.getElementById('modalNgekostSampai').value || '').trim();
+
+        if (!statusAwal) {
+          showMessage('Pilih status awal terlebih dahulu.', true);
+          return;
+        }
+
+        if (!bookingId) {
+          showMessage('Pilih nama&id booking terlebih dahulu.', true);
+          return;
+        }
+
+        if (BOOKING_STATUSES.indexOf(statusUpdate) === -1) {
+          showMessage('Pilih status update yang valid.', true);
+          return;
+        }
+
+        if (statusUpdate === 'diterima') {
+          if (!ngekostDari || !ngekostSampai) {
+            showMessage('Saat status diterima, bulan dari dan sampai wajib diisi.', true);
+            return;
+          }
+
+          if (ngekostSampai < ngekostDari) {
+            showMessage('Bulan sampai tidak boleh lebih kecil dari bulan dari.', true);
+            return;
+          }
+        }
+
+        const selectedBooking = bookingRows.find(function (row) {
+          return String(row.id_booking || '') === String(bookingId || '');
+        });
+
+        if (!selectedBooking) {
+          showMessage('Booking yang dipilih tidak ditemukan.', true);
+          return;
+        }
+
+        if (String(selectedBooking.status || '').toLowerCase() !== String(statusAwal || '').toLowerCase()) {
+          showMessage('Status awal booking sudah berubah. Silakan refresh lalu coba lagi.', true);
+          return;
+        }
+
+        const extraPayload = statusUpdate === 'diterima'
+          ? {
+              pengguna_ngekost_dari: ngekostDari,
+              pengguna_ngekost_sampai: ngekostSampai
+            }
+          : null;
+
+        const done = await setBookingStatus(bookingId, statusUpdate, false, extraPayload);
+        if (done) {
+          closeUpdateBookingModal();
+        }
+      }
+
+      function renderBookingStats(rows) {
+        const safeRows = Array.isArray(rows) ? rows : [];
+        const stats = {
+          total: safeRows.length,
+          baru: 0,
+          diproses: 0,
+          diterima: 0
+        };
+
+        safeRows.forEach(function (row) {
+          const status = String(row.status || '').toLowerCase();
+          if (status === 'baru') stats.baru += 1;
+          if (status === 'diproses') stats.diproses += 1;
+          if (status === 'diterima') stats.diterima += 1;
+        });
+
+        document.getElementById('statTotal').textContent = String(stats.total);
+        document.getElementById('statBaru').textContent = String(stats.baru);
+        document.getElementById('statDiproses').textContent = String(stats.diproses);
+        document.getElementById('statDiterima').textContent = String(stats.diterima);
+      }
+
+      function applyBookingFilter() {
+        const statusFilter = document.getElementById('bookingFilter').value;
+        const keyword = String(document.getElementById('bookingSearch').value || '').trim().toLowerCase();
+
+        const filtered = bookingRows.filter(function (row) {
+          const rowStatus = String(row.status || '').toLowerCase();
+          const matchesStatus = statusFilter === 'all' || rowStatus === statusFilter;
+          if (!matchesStatus) {
+            return false;
+          }
+
+          if (!keyword) {
+            return true;
+          }
+
+          const blob = [row.id_booking, row.nama, row.no_hp, row.email, row.id_kamar]
+            .map(function (v) { return String(v || '').toLowerCase(); })
+            .join(' ');
+
+          return blob.indexOf(keyword) >= 0;
+        });
+
+        renderBookingRows(filtered);
+      }
+
+      async function loadSession() {
+        const res = await callAction('sessionInfo');
+        const session = ensureApiResponse(res, 'Gagal memuat sesi') || {};
+        currentSessionUser = session;
+        document.getElementById('tab-users').style.display = session.role === 'owner' ? '' : 'none';
+        document.getElementById('sessionLine').textContent =
+          'Akun: ' + (session.username || session.email || '-') + ' • Peran: ' + (session.role || '-');
+      }
+
+      async function loadBookings() {
+        const res = await callAction('listBookings');
+        const data = ensureApiResponse(res, 'Gagal load booking');
+        bookingRows = Array.isArray(data) ? data : [];
+        renderBookingStats(bookingRows);
+        applyBookingFilter();
+      }
+
+      async function loadKost() {
+        const res = await callAction('listKost');
+        const data = ensureApiResponse(res, 'Gagal load kost');
+        kostRows = Array.isArray(data) ? data : [];
+        renderKostRows(kostRows);
+        populateKostOptionsForKamar();
+      }
+
+      async function loadKamar() {
+        const res = await callAction('listKamar');
+        const data = ensureApiResponse(res, 'Gagal load kamar');
+        kamarRows = Array.isArray(data) ? data : [];
+        renderKamarRows(kamarRows);
+        populateKamarOptionsForPengguna();
+      }
+
+      async function loadPengguna() {
+        const res = await callAction('listPengguna');
+        const data = ensureApiResponse(res, 'Gagal load pengguna');
+        penggunaRows = Array.isArray(data) ? data : [];
+        renderPenggunaRows(penggunaRows);
+      }
+
+      function renderUsersRows(rows) {
+        const tbody = document.getElementById('usersBody');
+        tbody.innerHTML = '';
+
+        if (!rows || rows.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td colspan="6" class="muted">Tidak ada data user</td>';
+          tbody.appendChild(tr);
+          return;
+        }
+
+        rows.forEach(function (row) {
+          const username = String(row.username || '');
+          const action = 'openChangePasswordPrompt(' + JSON.stringify(username) + ')';
+          const tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + escapeHtml(username || '-') + '</td>' +
+            '<td>' + escapeHtml(row.nama || '-') + '</td>' +
+            '<td>' + escapeHtml(row.email || '-') + '</td>' +
+            '<td>' + escapeHtml(row.role || '-') + '</td>' +
+            '<td>' + getStatusBadge((String(row.is_active || '').toLowerCase() === 'true') ? 'aktif' : 'nonaktif') + '</td>' +
+            '<td><button class="action-btn" onclick=\'' + action + '\'>Ganti Password</button></td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function loadUsers() {
+        if (!currentSessionUser || currentSessionUser.role !== 'owner') {
+          usersRows = [];
+          renderUsersRows(usersRows);
+          return;
+        }
+
+        const res = await callAction('listUsers');
+        const data = ensureApiResponse(res, 'Gagal load users');
+        usersRows = Array.isArray(data) ? data : [];
+        renderUsersRows(usersRows);
+      }
+
+      function openCreateUserModal() {
+        if (!currentSessionUser || currentSessionUser.role !== 'owner') {
+          showMessage('Hanya owner yang bisa menambah user.', true);
+          return;
+        }
+
+        document.getElementById('createUserNama').value = '';
+        document.getElementById('createUserUsername').value = '';
+        document.getElementById('createUserEmail').value = '';
+        document.getElementById('createUserRole').value = 'manager';
+        document.getElementById('createUserPassword').value = '';
+        document.getElementById('createUserModal').classList.add('active');
+      }
+
+      function closeCreateUserModal() {
+        document.getElementById('createUserModal').classList.remove('active');
+      }
+
+      function onCreateUserModalBackdropClick(event) {
+        if (event.target && event.target.id === 'createUserModal') {
+          closeCreateUserModal();
+        }
+      }
+
+      async function submitCreateUser() {
+        const payload = {
+          nama: String(document.getElementById('createUserNama').value || '').trim(),
+          username: String(document.getElementById('createUserUsername').value || '').trim(),
+          email: String(document.getElementById('createUserEmail').value || '').trim(),
+          role: String(document.getElementById('createUserRole').value || 'manager').trim(),
+          password: String(document.getElementById('createUserPassword').value || '').trim()
+        };
+
+        if (!payload.username) {
+          showMessage('Username user wajib diisi.', true);
+          return;
+        }
+        if (!payload.password) {
+          showMessage('Password user wajib diisi.', true);
+          return;
+        }
+
+        try {
+          showMessage('Menyimpan user baru...', false);
+          const res = await callAction('createUser', payload);
+          ensureApiResponse(res, 'Gagal menambah user.');
+          await loadUsers();
+          closeCreateUserModal();
+          showMessage('User baru berhasil ditambahkan.', false);
+        } catch (err) {
+          showMessage(err.message || 'Gagal menambah user.', true);
+        }
+      }
+
+      async function openChangePasswordPrompt(username) {
+        const target = String(username || '').trim();
+        if (!target) {
+          showMessage('Username tidak valid.', true);
+          return;
+        }
+
+        const newPassword = await themedPrompt(
+          'Masukkan password baru untuk user ' + target + ' (minimal 6 karakter):',
+          '',
+          'Ganti Password User',
+          'Password baru'
+        );
+
+        if (newPassword === null) {
+          return;
+        }
+
+        if (String(newPassword || '').length < 6) {
+          showMessage('Password minimal 6 karakter.', true);
+          return;
+        }
+
+        try {
+          showMessage('Mengubah password user...', false);
+          const res = await callAction('changeUserPassword', {
+            username: target,
+            password: newPassword
+          });
+          ensureApiResponse(res, 'Gagal mengubah password user.');
+          showMessage('Password user berhasil diubah.', false);
+        } catch (err) {
+          showMessage(err.message || 'Gagal mengubah password user.', true);
+        }
+      }
+
+      async function setBookingStatus(id_booking, status, withConfirm, extraPayload) {
+        if (isUpdatingBooking) {
+          showMessage('Update sedang diproses, tunggu sebentar.', true);
+          return false;
+        }
+
+        if (!id_booking) {
+          showMessage('ID booking tidak valid.', true);
+          return false;
+        }
+
+        if (BOOKING_STATUSES.indexOf(status) === -1) {
+          showMessage('Status booking tidak valid.', true);
+          return false;
+        }
+
+        const shouldConfirm = withConfirm !== false;
+        if (shouldConfirm) {
+          const confirmText = 'Ubah status booking ' + id_booking + ' menjadi "' + status + '"?';
+          const confirmed = await themedConfirm(confirmText, 'Update Status Booking');
+          if (!confirmed) {
+            return false;
+          }
+        }
+
+        try {
+          isUpdatingBooking = true;
+          showMessage('Memproses update status...', false);
+          const payload = Object.assign({ id_booking, status }, extraPayload || {});
+          const res = await callAction('updateBookingStatus', payload);
+          ensureApiResponse(res, 'Gagal update status.');
+          showMessage('Status booking ' + id_booking + ' berhasil diupdate ke ' + status + '.', false);
+          await loadBookings();
+          return true;
+        } catch (err) {
+          showMessage(err.message || 'Terjadi error.', true);
+          return false;
+        } finally {
+          isUpdatingBooking = false;
+        }
+      }
+
+      function openTestBookingModal() {
+        populateKamarOptionsForTestBooking();
+        document.getElementById('testBookingNama').value = '';
+        document.getElementById('testBookingEmail').value = '';
+        document.getElementById('testBookingNoHp').value = '';
+        document.getElementById('testBookingModal').classList.add('active');
+      }
+
+      function closeTestBookingModal() {
+        document.getElementById('testBookingModal').classList.remove('active');
+      }
+
+      function onTestBookingModalBackdropClick(event) {
+        if (event.target && event.target.id === 'testBookingModal') {
+          closeTestBookingModal();
+        }
+      }
+
+      async function submitTestBookingModal() {
+        const payload = {
+          nama: String(document.getElementById('testBookingNama').value || '').trim(),
+          email: String(document.getElementById('testBookingEmail').value || '').trim(),
+          no_hp: String(document.getElementById('testBookingNoHp').value || '').trim(),
+          id_kamar: String(document.getElementById('testBookingKamar').value || '').trim()
+        };
+
+        if (!payload.nama) {
+          showMessage('Nama wajib diisi.', true);
+          return;
+        }
+
+        if (!payload.email) {
+          showMessage('Email wajib diisi.', true);
+          return;
+        }
+
+        if (!payload.no_hp) {
+          showMessage('No HP wajib diisi.', true);
+          return;
+        }
+
+        if (!payload.id_kamar) {
+          showMessage('ID kamar wajib dipilih.', true);
+          return;
+        }
+
+        try {
+          showMessage('Menyimpan reservasi uji coba...', false);
+          const res = await callAction('createTestBooking', payload);
+          const data = ensureApiResponse(res, 'Gagal membuat booking test.');
+          closeTestBookingModal();
+          showMessage('Reservasi uji coba berhasil dibuat: ' + String((data && data.id_booking) || '-'), false);
+          await loadBookings();
+        } catch (err) {
+          showMessage(err.message || 'Terjadi error saat membuat booking test.', true);
+        }
+      }
+
+      async function reloadAll(silent) {
+        try {
+          const shouldSilent = !!silent;
+          if (!shouldSilent) {
+            showMessage('Memuat data dashboard...', false);
+          }
+
+          await Promise.all([loadSession(), loadBookings(), loadKost(), loadKamar(), loadPengguna(), loadUsers()]);
+
+          if (!shouldSilent) {
+            showMessage('Data dashboard berhasil diperbarui.', false);
+          }
+        } catch (err) {
+          const message = err.message || 'Gagal memuat data.';
+          if (String(message).toLowerCase().indexOf('sesi login') >= 0) {
+            if (autoRefreshIntervalId) {
+              clearInterval(autoRefreshIntervalId);
+              autoRefreshIntervalId = null;
+            }
+            setSessionToken('');
+            currentSessionUser = null;
+            document.getElementById('sessionLine').textContent = 'Belum ada sesi aktif';
+            openLoginModal();
+            showMessage('Sesi berakhir. Silakan masuk ulang.', true);
+            return;
+          }
+
+          showMessage(message, true);
+        }
+      }
+
+      function startAutoRefresh() {
+        if (autoRefreshIntervalId) {
+          clearInterval(autoRefreshIntervalId);
+        }
+
+        autoRefreshIntervalId = setInterval(function () {
+          reloadAll(true);
+        }, AUTO_REFRESH_INTERVAL_MS);
+      }
+
+      (async function init() {
+        restoreSessionToken();
+        try {
+          const bootstrapRes = await callAction('authBootstrap', { __session_token: sessionToken });
+          const bootstrap = ensureApiResponse(bootstrapRes, 'Gagal membaca status login.');
+
+          if (bootstrap && bootstrap.authenticated && sessionToken) {
+            await reloadAll();
+            startAutoRefresh();
+            closeLoginModal();
+            closeSetupCredentialsModal();
+            return;
+          }
+
+          setSessionToken('');
+          currentSessionUser = null;
+          document.getElementById('sessionLine').textContent = 'Belum ada sesi aktif';
+
+          if (bootstrap && bootstrap.needs_setup) {
+            closeLoginModal();
+            openSetupCredentialsModal(bootstrap);
+          } else {
+            closeSetupCredentialsModal();
+            openLoginModal();
+          }
+        } catch (err) {
+          setSessionToken('');
+          currentSessionUser = null;
+          document.getElementById('sessionLine').textContent = 'Belum ada sesi aktif';
+          openLoginModal();
+          showMessage(err.message || 'Gagal menyiapkan login.', true);
+        }
+      })();
+    </script>
+  </body>
+</html>
